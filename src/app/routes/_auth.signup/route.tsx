@@ -4,6 +4,7 @@ import {
 } from '@remix-run/node';
 import { Form, redirect } from '@remix-run/react';
 import { getSessionCookie, sessionCookie } from '~/lib/auth';
+
 import { createClient } from '~/utils/supabase/server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -20,14 +21,18 @@ export async function action({ request }: ActionFunctionArgs) {
   const supabase = createClient(request);
   const body = await request.formData();
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signUp({
     email: body.get('email') as string,
     password: body.get('password') as string,
   });
 
+  console.log('signup data', data);
+
   if (error) {
     console.error(error);
   }
+
+  console.log('error signup', error);
 
   return redirect(`/dashboard`, {
     headers: {
@@ -36,7 +41,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 }
 
-const Login = () => {
+const SignUp = () => {
   return (
     <div className='bg-gray-900'>
       <div className='flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0'>
@@ -76,7 +81,7 @@ const Login = () => {
                 type='submit'
                 className='w-full text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center'
               >
-                Login
+                Signup
               </button>
             </Form>
           </div>
@@ -86,4 +91,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;
