@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useScrollToBottom } from './useScrollToBottom';
-import { MessageType } from './useSendMessage';
+import { MessageType } from './useSendNextMessage';
 import { buildMessageUuid } from '~/utils/chat/buildMessageUuid';
 import { Docagg, IChunk } from '~/app/hooks/logic-hooks';
 import { getMessagePureId } from '~/utils/chat/getMessagePureId';
@@ -42,7 +42,6 @@ export const useSelectDerivedMessages = () => {
   const addNewestQuestion = useCallback(
     (message: Message, answer: string = '') => {
       setDerivedMessages((pre) => {
-        console.log('pre', pre);
         return [
           ...pre,
           {

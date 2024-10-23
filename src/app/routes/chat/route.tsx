@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLoaderData } from '@remix-run/react';
 import { json, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
+import get from 'lodash/get';
 import {
   Avatar,
   AvatarFallback,
@@ -14,14 +15,15 @@ import {
   ScrollArea,
 } from '~/components/ui';
 import { MessageCircle, Send } from 'lucide-react';
-import { useSendMessageWithSse } from '~/app/hooks/logic-hooks';
 
 import { loader as dialogLoader } from '~/app/routes/dialog.list/route';
-import { useSetDialogIdRouteParam } from '~/app/hooks/useSetDialogIdRouteParam';
 import { IDialog } from '../dialog.list/interface';
 import { useGetChatSearchParams } from '~/app/hooks/useGetChatSearchParams';
 import { getConversationId } from '~/utils/chat/getConversationId';
 import { useSetNewConversationRouteParams } from '~/app/hooks/useSetNewConversationRouteParams';
+import { useSendNextMessage } from '~/app/hooks/useSendNextMessage';
+import { getRagSessionCookie } from '~/lib/auth';
+import { useSendMessageWithSse } from '~/app/hooks/useSendMessageWithSse';
 
 export const meta: MetaFunction = () => {
   return [
@@ -32,52 +34,52 @@ export const meta: MetaFunction = () => {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const dialogList = await dialogLoader({ request } as LoaderFunctionArgs);
+  const { authorization } = await getRagSessionCookie(request);
 
   return json({
     initialMessage: 'Hello! How can I assist you today?',
     dialogList: await dialogList.json(),
+    authorization,
   });
 };
 
 export default function Chat() {
   const { dialogList, initialMessage } = useLoaderData<typeof loader>();
-  const { setDialogIdRouteParam } = useSetDialogIdRouteParam();
   const { dialogId } = useGetChatSearchParams();
   const conversationId = getConversationId();
   const { setNewConversationRouteParams } = useSetNewConversationRouteParams();
 
+  const [controller] = useState(new AbortController());
+
   const {
-    value,
-    ref,
-    loading,
-    sendLoading,
+    // value,
+    // ref,
+    // loading,
+    // sendLoading,
     derivedMessages,
     handleInputChange,
     handlePressEnter,
-    regenerateMessage,
-    removeMessageById,
+    // regenerateMessage,
+    // removeMessageById,
   } = useSendNextMessage(controller);
 
-  console.log('conversationId', conversationId);
-
   useEffect(() => {
-    if (dialogList) {
+    console.log('rendered?');
+    if (dialogList && !dialogId) {
       if (dialogList.length > 0) {
         if (
           dialogList.every((dialogItem: IDialog) => dialogItem.id !== dialogId)
         ) {
-          setDialogIdRouteParam(dialogList[0].id);
+          //Combine setting url of dialogId, conversationId and isNew for the first load
+          setNewConversationRouteParams(
+            conversationId,
+            'true',
+            dialogList[0].id
+          );
         }
       }
     }
-  }, [dialogList]);
-
-  useEffect(() => {
-    if (dialogId) {
-      console.log('conversationId', conversationId);
-      // setNewConversationRouteParams(conversationId, 'true');
-    }
-  }, [conversationId, dialogId]);
+  }, []);
 
   const { send, answer, done, setDone, setShowFinalAnswer, showFinalAnswer } =
     useSendMessageWithSse();
@@ -87,11 +89,11 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
-  }, [messages]);
+  // useEffect(() => {
+  //   if (scrollAreaRef.current) {
+  //     scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+  //   }
+  // }, [messages]);
 
   useEffect(() => {
     if (answer.answer && showFinalAnswer) {
@@ -104,24 +106,30 @@ export default function Chat() {
     }
   }, [answer, setDone, showFinalAnswer]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!input.trim()) return;
+  const [fileList, setFileList] = useState<any>([]);
 
-    const userMessage = { role: 'user', content: input };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
+  const isUploadingFile = fileList.some((x) => x.status === 'uploading');
 
-    await send({
-      conversation_id: '66527f984d2b48eb90e7cb07820b01a2',
-      messages: [...messages, userMessage].map(({ role, content }) => ({
-        role: role === 'bot' ? 'assistant' : role,
-        content,
-      })),
-    });
+  const getFileIds = (fileList: any) => {
+    const ids = fileList.reduce((pre, cur) => {
+      return pre.concat(get(cur, 'response.data', []));
+    }, []);
+
+    return ids;
   };
 
-  const fetcher = useFetcher();
+  const isUploadSuccess = (file: any) => {
+    const retcode = get(file, 'response.retcode');
+    return typeof retcode === 'number' && retcode === 0;
+  };
+
+  const handleSubmit = useCallback(async () => {
+    if (isUploadingFile) return;
+    const ids = getFileIds(fileList.filter((x) => isUploadSuccess(x)));
+
+    handlePressEnter(ids);
+    setFileList([]);
+  }, [fileList, handlePressEnter, isUploadingFile]);
 
   return (
     <div className='flex flex-col min-h-screen bg-background p-4 sm:p-6 md:p-8'>
@@ -141,7 +149,7 @@ export default function Chat() {
         </CardHeader>
         <CardContent className='flex-grow overflow-hidden p-4 sm:p-6'>
           <ScrollArea className='h-full pr-4' ref={scrollAreaRef}>
-            {messages.map((message, index) => (
+            {derivedMessages.map((message, index) => (
               <div
                 key={index}
                 className={`flex ${
@@ -180,25 +188,28 @@ export default function Chat() {
           </ScrollArea>
         </CardContent>
         <CardFooter className='p-4 sm:p-6'>
-          <fetcher.Form
-            action='/conversation/completion'
-            method='post'
-            className='flex w-full gap-2'
+          <Input
+            name='chatInput'
+            type='text'
+            value={input}
+            onPressEnter={handlePressEnter}
+            onChange={(e) => {
+              setInput(e.target.value);
+              handleInputChange(e);
+            }}
+            placeholder='Type your message...'
+            className='flex-grow text-sm sm:text-base'
+            disabled={!done}
+          />
+          <Button
+            type='button'
+            onClick={handleSubmit}
+            disabled={!done}
+            className='px-3 sm:px-4'
           >
-            <Input
-              name='chatInput'
-              type='text'
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder='Type your message...'
-              className='flex-grow text-sm sm:text-base'
-              disabled={!done}
-            />
-            <Button type='submit' disabled={!done} className='px-3 sm:px-4'>
-              <Send className='w-4 h-4 sm:mr-2' />
-              <span className='hidden sm:inline'>Send</span>
-            </Button>
-          </fetcher.Form>
+            <Send className='w-4 h-4 sm:mr-2' />
+            <span className='hidden sm:inline'>Send</span>
+          </Button>
         </CardFooter>
       </Card>
     </div>

@@ -1,14 +1,12 @@
-import { useCallback, useEffect } from 'react';
-import { v4 as uuid } from 'uuid';
+import { useSelectDerivedMessages } from './useSelectDerivedMessages';
 
-import { IMessage, useSelectDerivedMessages } from './useSelectDerivedMessages';
-import { useGetChatSearchParams } from './useGetChatSearchParams';
-import { MessageType } from './useSendMessage';
+import { useFetchNextConversation } from './queries/useFetchNextConversation';
 
+// Hook for selecting premade or existing chat, and display details on chat/conversation
 export const useSelectNextMessages = () => {
   const {
     ref,
-    setDerivedMessages,
+    // setDerivedMessages,
     derivedMessages,
     addNewestAnswer,
     addNewestQuestion,
@@ -16,42 +14,51 @@ export const useSelectNextMessages = () => {
     removeMessageById,
     removeMessagesAfterCurrentMessage,
   } = useSelectDerivedMessages();
-  const { data: conversation, loading } = useFetchNextConversation();
-  const { data: dialog } = useFetchNextDialog();
-  const { conversationId, dialogId, isNew } = useGetChatSearchParams();
 
-  const addPrologue = useCallback(() => {
-    if (dialogId !== '' && isNew === 'true') {
-      const prologue = dialog.prompt_config?.prologue;
+  const {
+    data:
+      // conversation,
+      loading,
+  } = useFetchNextConversation();
 
-      const nextMessage = {
-        role: MessageType.Assistant,
-        content: prologue,
-        id: uuid(),
-      } as IMessage;
+  // const { data: dialog } = useFetchNextDialog();
+  // const { dialogList, initialMessage } = useLoaderData();
 
-      setDerivedMessages([nextMessage]);
-    }
-  }, [isNew, dialog, dialogId, setDerivedMessages]);
+  // console.log('dialogList', dialogList);
+  // const { conversationId, dialogId, isNew } = useGetChatSearchParams();
 
-  useEffect(() => {
-    addPrologue();
-  }, [addPrologue]);
+  // const addPrologue = useCallback(() => {
+  //   if (dialogId !== '' && isNew === 'true') {
+  //     const prologue = dialog.prompt_config?.prologue;
 
-  useEffect(() => {
-    if (
-      conversationId &&
-      isNew !== 'true' &&
-      conversation.message?.length > 0
-    ) {
-      console.log('conversation.message setting?', conversation.message);
-      setDerivedMessages(conversation.message);
-    }
+  //     const nextMessage = {
+  //       role: MessageType.Assistant,
+  //       content: prologue,
+  //       id: uuid(),
+  //     } as IMessage;
 
-    if (!conversationId) {
-      setDerivedMessages([]);
-    }
-  }, [conversation.message, conversationId, setDerivedMessages, isNew]);
+  //     setDerivedMessages([nextMessage]);
+  //   }
+  // }, [isNew, dialog, dialogId, setDerivedMessages]);
+
+  // useEffect(() => {
+  //   addPrologue();
+  // }, [addPrologue]);
+
+  // useEffect(() => {
+  //   if (
+  //     conversationId &&
+  //     isNew !== 'true' &&
+  //     conversation.message?.length > 0
+  //   ) {
+  //     console.log('conversation.message setting?', conversation.message);
+  //     setDerivedMessages(conversation.message);
+  //   }
+
+  //   if (!conversationId) {
+  //     setDerivedMessages([]);
+  //   }
+  // }, [conversation.message, conversationId, setDerivedMessages, isNew]);
 
   return {
     ref,

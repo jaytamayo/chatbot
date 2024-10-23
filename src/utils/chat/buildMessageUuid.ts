@@ -1,4 +1,4 @@
-import { MessageType } from '~/app/hooks/useSendMessage';
+import { MessageType } from '~/app/hooks/useSendNextMessage';
 import { v4 as uuid } from 'uuid';
 import { IMessage, Message } from '~/app/hooks/useSelectDerivedMessages';
 

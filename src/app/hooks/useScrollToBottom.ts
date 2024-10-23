@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef } from 'react';
+
 export const useScrollToBottom = (messages?: unknown) => {
   const ref = useRef<HTMLDivElement>(null);
 
