@@ -8,6 +8,14 @@ export async function getSessionCookie(request: Request) {
   return session;
 }
 
+export async function getRagSessionCookie(request: Request) {
+  const cookie = request.headers.get('Cookie');
+
+  const ragSession = await ragSessionCookie.parse(cookie);
+
+  return ragSession;
+}
+
 export async function requireUserSession(request: Request) {
   const session = await getSessionCookie(request);
 
@@ -26,6 +34,15 @@ export async function requireUserSession(request: Request) {
 }
 
 export const sessionCookie = createCookie('session', {
+  path: '/',
+  sameSite: 'lax',
+  httpOnly: true,
+  secure: true,
+  maxAge: 60 * 60 * 24 * 30, //30 days
+  secrets: ['s3cret1'],
+});
+
+export const ragSessionCookie = createCookie('ragSession', {
   path: '/',
   sameSite: 'lax',
   httpOnly: true,

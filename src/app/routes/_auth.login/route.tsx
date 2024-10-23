@@ -2,8 +2,9 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from '@remix-run/node';
-import { Form, redirect } from '@remix-run/react';
-import { getSessionCookie, sessionCookie } from '~/lib/auth';
+import { Form, redirect, useSubmit } from '@remix-run/react';
+import { getSessionCookie, ragSessionCookie, sessionCookie } from '~/lib/auth';
+import { encryptPassword } from '~/utils/encryptPassword/index.client';
 import { createClient } from '~/utils/supabase/server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -25,24 +26,58 @@ export async function action({ request }: ActionFunctionArgs) {
     password: body.get('password') as string,
   });
 
+  const ragResponse = await fetch('http://127.0.0.1:9380/v1/user/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email: body.get('email') as string,
+      password: body.get('encryptedPassword') as string,
+    }),
+  });
+
+  const ragSession = await ragResponse.json();
+
+  const ragAuth = ragResponse.headers.get('Authorization');
+
+  ragSession.authorization = ragAuth;
+
   if (error) {
     console.error(error);
   }
 
   return redirect(`/dashboard`, {
-    headers: {
-      'Set-Cookie': await sessionCookie.serialize(data.session),
-    },
+    headers: [
+      ['Set-Cookie', await sessionCookie.serialize(data.session)],
+      ['Set-Cookie', await ragSessionCookie.serialize(ragSession)],
+    ],
   });
 }
 
 const Login = () => {
+  const submit = useSubmit();
+
   return (
     <div className='bg-gray-900'>
       <div className='flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0'>
         <div className='w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0'>
           <div className='p-6 space-y-4 md:space-y-6 sm:p-8'>
-            <Form className='space-y-4 md:space-y-6' method='post'>
+            <Form
+              className='space-y-4 md:space-y-6'
+              onSubmit={(event) => {
+                event.preventDefault();
+                const formData = new FormData(event.target as HTMLFormElement);
+
+                const encryptedPassword = encryptPassword(
+                  formData.get('password') as string
+                );
+
+                formData.set('encryptedPassword', encryptedPassword as string);
+
+                submit(formData, { method: 'post' });
+              }}
+            >
               <div>
                 <label
                   htmlFor='email'

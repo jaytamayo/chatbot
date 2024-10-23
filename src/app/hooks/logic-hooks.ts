@@ -1,5 +1,5 @@
-import { EventSourceParserStream } from "eventsource-parser/stream";
-import { useCallback, useRef, useState } from "react";
+import { EventSourceParserStream } from 'eventsource-parser/stream';
+import { useCallback, useRef, useState } from 'react';
 
 export interface Docagg {
   count: number;
@@ -34,7 +34,7 @@ export interface IAnswer {
 }
 
 export const useSendMessageWithSse = (
-  url: string = "http://localhost:9380/v1/conversation/completion"
+  url: string = 'http://localhost:9380/v1/conversation/completion'
 ) => {
   const [answer, setAnswer] = useState<IAnswer>({} as IAnswer);
   const [done, setDone] = useState(true);
@@ -53,21 +53,21 @@ export const useSendMessageWithSse = (
 
   const send = useCallback(
     async (
-      body: any,
-      controller?: AbortController
+      body: any
+      // controller?: AbortController
     ): Promise<{ response: Response; data: ResponseType } | undefined> => {
       try {
         setDone(false);
 
         const response = await fetch(url, {
-          method: "POST",
+          method: 'POST',
           headers: {
             Authorization:
-              "ImY0MDZkMjI0OGMyYzExZWZhYTNiMDI0MmFjMTIwMDA1Ig.ZxByCQ.248f8FrLVPnXM7tVkVqnRROupk4",
-            "Content-Type": "application/json",
+              'IjU3ZmM1OTMxOTA1YjExZWZiNTJiMDI0MmFjMTIwMDA0Ig.Zxd12g.S6UnRbiqdieZJ1Jf_TlEfX_X2FI',
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(body),
-          signal: controller?.signal,
+          // signal: controller?.signal,
         });
 
         const res = response.clone().json();
@@ -87,9 +87,9 @@ export const useSendMessageWithSse = (
               break;
             }
             try {
-              const val = JSON.parse(value?.data || "");
+              const val = JSON.parse(value?.data || '');
               const d = val?.data;
-              if (typeof d !== "boolean") {
+              if (typeof d !== 'boolean') {
                 setAnswer({
                   ...d,
                   conversationId: body?.conversation_id,
