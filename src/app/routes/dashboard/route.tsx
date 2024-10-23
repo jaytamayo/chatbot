@@ -1,8 +1,8 @@
 import { type LoaderFunctionArgs } from "@remix-run/node";
 import { requireUserSession } from "~/lib/auth";
-import { MessageCircle, LogOut } from "lucide-react";
-import { Button } from "~/components/ui";
-import { Form, useNavigate } from "@remix-run/react";
+import { Menu } from "lucide-react";
+import { Button, Sheet, SheetContent, SheetTrigger } from "~/components/ui";
+import { Sidebar } from "~/components";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await requireUserSession(request);
@@ -11,27 +11,34 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white rounded-full shadow-md px-4 py-2 flex items-center space-x-4">
-        <Form action="/logout" method="post">
-          <Button
-            type="submit"
-            className="focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full p-1 transition-colors duration-200"
-          >
-            <LogOut size={24} />
-          </Button>
-        </Form>
+    <>
+      <div className="flex h-screen bg-gray-100">
+        <div className="hidden md:block w-64 bg-white shadow-md">
+          <Sidebar />
+        </div>
 
-        <Button
-          onClick={() => navigate("/chat")}
-          className="focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full p-1 transition-colors duration-200"
-        >
-          <MessageCircle size={24} />
-        </Button>
+        <div className="flex-1 flex flex-col">
+          <header className="bg-white shadow-sm">
+            <div className="max-w-7xl mx-auto py-[22px] px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+              <h1 className="text-lg font-semibold text-gray-900">
+                Chat Interface
+              </h1>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon" className="md:hidden">
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-64 p-0">
+                  <Sidebar />
+                </SheetContent>
+              </Sheet>
+            </div>
+          </header>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

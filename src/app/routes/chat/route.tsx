@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Form, useLoaderData } from "@remix-run/react";
-import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
+import {
+  json,
+  LoaderFunction,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from "@remix-run/node";
 import {
   Avatar,
   AvatarFallback,
@@ -15,6 +20,7 @@ import {
 } from "~/components/ui";
 import { MessageCircle, Send } from "lucide-react";
 import { useSendMessageWithSse } from "~/app/hooks/logic-hooks";
+import { requireUserSession } from "~/lib/auth";
 
 export const meta: MetaFunction = () => {
   return [
@@ -23,8 +29,14 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader: LoaderFunction = async () => {
-  return json({ initialMessage: "Hello! How can I assist you today?" });
+export const loader: LoaderFunction = async ({
+  request,
+}: LoaderFunctionArgs) => {
+  const session = await requireUserSession(request);
+
+  if (session) {
+    return json({ initialMessage: "Hello! How can I assist you today?" });
+  }
 };
 
 export default function Chat() {
