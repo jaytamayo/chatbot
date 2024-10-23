@@ -46,6 +46,18 @@ export default function Chat() {
   const conversationId = getConversationId();
   const { setNewConversationRouteParams } = useSetNewConversationRouteParams();
 
+  const {
+    value,
+    ref,
+    loading,
+    sendLoading,
+    derivedMessages,
+    handleInputChange,
+    handlePressEnter,
+    regenerateMessage,
+    removeMessageById,
+  } = useSendNextMessage(controller);
+
   console.log('conversationId', conversationId);
 
   useEffect(() => {
