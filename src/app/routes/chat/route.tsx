@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLoaderData } from "@remix-run/react";
 import { json, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import get from "lodash/get";
+
 import {
   Avatar,
   AvatarFallback,
@@ -22,6 +23,8 @@ import { getRagSessionCookie } from "~/lib/auth";
 import { useSelectDerivedConversationList } from "~/app/hooks/useSelectDerivedConversationList";
 import { useFetchNextDialogList } from "~/app/hooks/queries/useFetchNextDialogList";
 import { useGetChatSearchParams } from "~/app/hooks/useGetChatSearchParams";
+import { requireUserSession } from "~/lib/auth";
+import { LoaderFunction } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
   return [
@@ -30,14 +33,20 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader: LoaderFunction = async ({
+  request,
+}: LoaderFunctionArgs) => {
   const dialogList = await dialogLoader({ request } as LoaderFunctionArgs);
   const { authorization } = await getRagSessionCookie(request);
 
-  return json({
-    dialogList: await dialogList.json(),
-    authorization,
-  });
+  const session = await requireUserSession(request);
+
+  if (session) {
+    return json({
+      dialogList: await dialogList.json(),
+      authorization,
+    });
+  }
 };
 
 export default function Chat() {
@@ -53,7 +62,7 @@ export default function Chat() {
   const { list: conversationList, addTemporaryConversation } =
     useSelectDerivedConversationList();
 
-  const [controller, setController] = useState(new AbortController());
+  const [controller] = useState(new AbortController());
 
   const {
     ref,
@@ -119,19 +128,12 @@ export default function Chat() {
 
   return (
     isHydrated && (
-      <div className="flex flex-col min-h-screen bg-background p-4 sm:p-6 md:p-8">
-        <Card className="flex flex-col h-[calc(100vh-2rem)] sm:h-[calc(100vh-3rem)] md:h-[calc(100vh-4rem)] max-w-4xl mx-auto w-full">
-          {dialogData?.map((x) => (
-            <Card key={x.id}>
-              <div className="block">Icon: {x.icon}</div>
-              <div className="block">Name: {x.name}</div>
-              <div className="block">Id: {x.id}</div>
-            </Card>
-          ))}
-          <CardHeader className="p-4 sm:p-6">
+      <div className="flex-1 overflow-hidden p-4 sm:p-6 md:p-8">
+        <Card className="flex flex-col h-full max-w-4xl mx-auto shadow-xl">
+          <CardHeader className="p-4 sm:p-6 bg-black from-primary to-primary-foreground text-white">
             <CardTitle className="flex items-center text-lg sm:text-xl md:text-2xl">
-              <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-              Chatbot
+              <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 mr-2" />
+              {dialogData?.[0].name}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-grow overflow-hidden p-4 sm:p-6">
@@ -180,7 +182,7 @@ export default function Chat() {
               <div ref={ref} />
             </ScrollArea>
           </CardContent>
-          <CardFooter className="p-4 sm:p-6">
+          <CardFooter className="p-4 sm:p-6 bg-gray-50">
             <Input
               name="chatInput"
               type="text"
@@ -196,7 +198,7 @@ export default function Chat() {
               disabled={sendLoading}
               type="button"
               onClick={handleSubmit}
-              className="px-3 sm:px-4"
+              className="px-3 sm:px-4 bg-primary hover:bg-primary-foreground transition-colors duration-200"
             >
               <Send className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Send</span>
