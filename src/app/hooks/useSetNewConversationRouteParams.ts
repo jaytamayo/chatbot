@@ -1,20 +1,23 @@
-import { useSearchParams } from '@remix-run/react';
-import { useCallback, useMemo } from 'react';
+import { useSearchParams } from "@remix-run/react";
+import { useCallback, useMemo } from "react";
+
+export enum ChatSearchParams {
+  DialogId = "dialogId",
+  ConversationId = "conversationId",
+  isNew = "isNew",
+}
 
 export const useSetNewConversationRouteParams = () => {
   const [currentQueryParameters, setSearchParams] = useSearchParams();
-
   const newQueryParameters: URLSearchParams = useMemo(
     () => new URLSearchParams(currentQueryParameters.toString()),
     [currentQueryParameters]
   );
 
   const setNewConversationRouteParams = useCallback(
-    (conversationId: string, isNew: string, dialogId: string) => {
-      newQueryParameters.set('dialogId', dialogId);
-      newQueryParameters.set('conversationId', conversationId);
-      newQueryParameters.set('isNew', isNew);
-
+    (conversationId: string, isNew: string) => {
+      newQueryParameters.set(ChatSearchParams.ConversationId, conversationId);
+      newQueryParameters.set(ChatSearchParams.isNew, isNew);
       setSearchParams(newQueryParameters);
     },
     [newQueryParameters, setSearchParams]

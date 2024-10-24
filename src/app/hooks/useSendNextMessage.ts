@@ -1,45 +1,40 @@
-import { useCallback, useEffect } from 'react';
-import trim from 'lodash/trim';
-import { v4 as uuid } from 'uuid';
+import { useCallback, useEffect } from "react";
+import trim from "lodash/trim";
+import { v4 as uuid } from "uuid";
 
-import { useHandleMessageInputChange } from './useHandleMessageInputChange';
-import { useSelectNextMessages } from './useSelectNextMessages';
-import { Message } from './useSelectDerivedMessages';
-import { useSearchParams } from '@remix-run/react';
-import { useSetChatRouteParams } from './useSetChatRouteParams';
-import { useSetConversation } from './useSetConversation';
-import { useSendMessageWithSse } from './useSendMessageWithSse';
-import { useRegenerateMessage } from './useRegenerateMessage';
+import { useHandleMessageInputChange } from "./useHandleMessageInputChange";
+import { useSelectNextMessages } from "./useSelectNextMessages";
+import { Message } from "./useSelectDerivedMessages";
+import { useSearchParams } from "@remix-run/react";
+import { useSetChatRouteParams } from "./useSetChatRouteParams";
+import { useSetConversation } from "./useSetConversation";
+import { useSendMessageWithSse } from "./useSendMessageWithSse";
+import { useRegenerateMessage } from "./useRegenerateMessage";
+import { useGetChatSearchParams } from "./useGetChatSearchParams";
 
 export const useSendNextMessage = (controller: AbortController) => {
   const { setConversation } = useSetConversation();
-  // const { conversationId, isNew } = useGetChatSearchParams();
+  const { conversationId, isNew } = useGetChatSearchParams();
   const { handleInputChange, value, setValue } = useHandleMessageInputChange();
 
   const {
     send,
     answer,
     done = false,
-  } = useSendMessageWithSse('http://localhost:9380/v1/conversation/completion');
+  } = useSendMessageWithSse("http://localhost:9380/v1/conversation/completion");
 
   const {
-    // ref,
+    ref,
     derivedMessages,
     loading,
     addNewestAnswer,
     addNewestQuestion,
     removeLatestMessage,
-    // removeMessageById,
+    removeMessageById,
     removeMessagesAfterCurrentMessage,
   } = useSelectNextMessages();
 
-  const [searchParams] = useSearchParams();
-
   const { setConversationIsNew } = useSetChatRouteParams();
-
-  const conversationId = searchParams.get('conversationId') as string;
-
-  const isNew = searchParams.get('isNew') as string;
 
   const sendMessage = useCallback(
     async ({
@@ -62,7 +57,7 @@ export const useSendNextMessage = (controller: AbortController) => {
       if (res && (res?.response.status !== 200 || res?.data?.retcode !== 0)) {
         // cancel loading
         setValue(message.content);
-        console.info('removeLatestMessage111');
+        console.info("removeLatestMessage111");
         removeLatestMessage();
       }
     },
@@ -84,15 +79,14 @@ export const useSendNextMessage = (controller: AbortController) => {
 
   useEffect(() => {
     //  #1289
-    if (answer.answer && conversationId && isNew !== 'true') {
+    if (answer.answer && conversationId && isNew !== "true") {
       addNewestAnswer(answer);
     }
   }, [answer, addNewestAnswer, conversationId, isNew]);
 
   const handleSendMessage = useCallback(
     async (message: Message) => {
-      if (isNew !== 'true') {
-        console.log('message not new', message);
+      if (isNew !== "true") {
         sendMessage({ message });
       } else {
         const data = await setConversation(
@@ -101,11 +95,8 @@ export const useSendNextMessage = (controller: AbortController) => {
           conversationId
         );
         if (data.retcode === 0) {
-          console.log('before send new', data);
-          setConversationIsNew('');
+          setConversationIsNew("");
           const id = data.data.id;
-
-          console.log('before id', id);
 
           sendMessage({
             message,
@@ -121,7 +112,7 @@ export const useSendNextMessage = (controller: AbortController) => {
   // Callback used for handleSubmit for chat input
   const handlePressEnter = useCallback(
     (documentIds: string[]) => {
-      if (trim(value) === '') return;
+      if (trim(value) === "") return;
       const id = uuid();
 
       addNewestQuestion({
@@ -131,7 +122,7 @@ export const useSendNextMessage = (controller: AbortController) => {
         role: MessageType.User,
       });
       if (done) {
-        setValue('');
+        setValue("");
         handleSendMessage({
           id,
           content: value.trim(),
@@ -151,13 +142,13 @@ export const useSendNextMessage = (controller: AbortController) => {
     regenerateMessage,
     sendLoading: !done,
     loading,
-    // ref,
+    ref,
     derivedMessages,
-    // removeMessageById,
+    removeMessageById,
   };
 };
 
 export enum MessageType {
-  Assistant = 'assistant',
-  User = 'user',
+  Assistant = "assistant",
+  User = "user",
 }
