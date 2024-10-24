@@ -1,16 +1,16 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
-import { redirect } from '@remix-run/react';
-import { getRagSessionCookie } from '~/lib/auth';
-import { IDialog } from './interface';
+import { json, LoaderFunctionArgs } from "@remix-run/node";
+import { redirect } from "@remix-run/react";
+import { getRagSessionCookie } from "~/lib/auth";
+import { IDialog } from "./interface";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { authorization } = await getRagSessionCookie(request);
 
-  const response = await fetch('http://localhost:9380/v1/dialog/list', {
-    method: 'GET',
+  const response = await fetch("http://localhost:9380/v1/dialog/list", {
+    method: "GET",
     headers: {
       Authorization: authorization,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
@@ -20,7 +20,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const list: IDialog[] = data;
 
     if (!list.length) {
-      return redirect('/chat');
+      return redirect("/chat");
     }
   }
 
