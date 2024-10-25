@@ -3,7 +3,7 @@ import { useGetChatSearchParams } from '../useGetChatSearchParams';
 import { IMessage, IReference, Message } from '../useSelectDerivedMessages';
 import { isConversationIdExist } from '~/app/routes/conversation.get/route';
 import { buildMessageListWithUuid } from '~/utils/chat/buildMessageListWithUuid';
-import { loader } from '~/app/routes/chat/route';
+import { loader } from '~/app/routes/_private.chat/route';
 import { useLoaderData } from '@remix-run/react';
 
 // Hook for fetching the contents of selected existing chat/conversation

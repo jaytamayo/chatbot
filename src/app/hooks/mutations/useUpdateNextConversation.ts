@@ -1,6 +1,6 @@
 import { useLoaderData } from '@remix-run/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { loader } from '~/app/routes/chat/route';
+import { loader } from '~/app/routes/_private.chat/route';
 import { getConversationId } from '~/utils/chat/buildMessageListWithUuid';
 
 export const useUpdateNextConversation = () => {

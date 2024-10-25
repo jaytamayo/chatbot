@@ -1,12 +1,12 @@
-import { IMessage, useSelectDerivedMessages } from "./useSelectDerivedMessages";
+import { IMessage, useSelectDerivedMessages } from './useSelectDerivedMessages';
 
-import { useFetchNextConversation } from "./queries/useFetchNextConversation";
-import { useGetChatSearchParams } from "./useGetChatSearchParams";
-import { useCallback, useEffect } from "react";
-import { MessageType } from "./useSendNextMessage";
-import { v4 as uuid } from "uuid";
-import { useLoaderData } from "@remix-run/react";
-import { loader } from "~/app/routes/chat/route";
+import { useFetchNextConversation } from './queries/useFetchNextConversation';
+import { useGetChatSearchParams } from './useGetChatSearchParams';
+import { useCallback, useEffect } from 'react';
+import { MessageType } from './useSendNextMessage';
+import { v4 as uuid } from 'uuid';
+import { useLoaderData } from '@remix-run/react';
+import { loader } from '~/app/routes/_private.chat/route';
 
 // Hook for selecting premade or existing chat, and display details on chat/conversation
 export const useSelectNextMessages = () => {
@@ -26,12 +26,12 @@ export const useSelectNextMessages = () => {
 
   const { data: conversation, loading } = useFetchNextConversation();
 
-  const dialog = dialogList?.prompt_config?.prologue ?? "";
+  const dialog = dialogList?.prompt_config?.prologue ?? '';
 
   const { conversationId, dialogId, isNew } = useGetChatSearchParams();
 
   const addPrologue = useCallback(() => {
-    if (dialogId !== "" && isNew === "true") {
+    if (dialogId !== '' && isNew === 'true') {
       const nextMessage = {
         role: MessageType.Assistant,
         content: dialog,
@@ -49,7 +49,7 @@ export const useSelectNextMessages = () => {
   useEffect(() => {
     if (
       conversationId &&
-      isNew !== "true" &&
+      isNew !== 'true' &&
       conversation.message?.length > 0
     ) {
       setDerivedMessages(conversation.message);
