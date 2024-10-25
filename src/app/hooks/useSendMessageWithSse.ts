@@ -2,7 +2,7 @@ import { EventSourceParserStream } from 'eventsource-parser/stream';
 import { useCallback, useRef, useState } from 'react';
 import { IAnswer } from './logic-hooks';
 
-import { loader } from '~/app/routes/chat/route';
+import { loader } from '~/app/routes/_private.chat/route';
 import { useLoaderData } from '@remix-run/react';
 
 export interface ResponseType<T = any> {
