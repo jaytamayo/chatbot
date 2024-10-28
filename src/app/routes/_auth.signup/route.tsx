@@ -2,8 +2,7 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "@remix-run/node";
-import { Form, json, redirect, useActionData } from "@remix-run/react";
-import AuthLayout from "~/components/AuthLayout";
+import { Form, json, redirect } from "@remix-run/react";
 import { Button, Input } from "~/components/ui";
 import { getSessionCookie, sessionCookie } from "~/lib/auth";
 
@@ -20,55 +19,51 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function SignUp() {
-  const actionData = useActionData<typeof action>();
-
   return (
-    <AuthLayout title="Register" message={actionData?.message}>
-      <Form className="space-y-6" method="post">
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Email address
-          </label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-          />
-        </div>
+    <Form className="space-y-6" method="post">
+      <div>
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Email address
+        </label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+        />
+      </div>
 
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Password
-          </label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-          />
-        </div>
+      <div>
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Password
+        </label>
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+        />
+      </div>
 
-        <div>
-          <Button
-            type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Sign up
-          </Button>
-        </div>
-      </Form>
-    </AuthLayout>
+      <div>
+        <Button
+          type="submit"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Sign up
+        </Button>
+      </div>
+    </Form>
   );
 }
 
