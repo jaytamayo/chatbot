@@ -1,9 +1,13 @@
 import * as React from "react";
-import { Form, Link, redirect, useNavigate } from "@remix-run/react";
+import { Form, Link, useNavigate } from "@remix-run/react";
 import { LogOut, MessageSquare, BarChart, Users, Settings } from "lucide-react";
 import { Button } from "~/components/ui";
 
-export const Sidebar = () => {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export const Sidebar = ({ onClose }: SidebarProps) => {
   const sidebarData = [
     {
       to: "/chat",
@@ -29,6 +33,11 @@ export const Sidebar = () => {
 
   const navigate = useNavigate();
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    onClose && onClose();
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="ml-8 mt-2 p-2">
@@ -45,6 +54,10 @@ export const Sidebar = () => {
             <React.Fragment key={index}>
               <Link
                 to={data.to}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavigation(data.to);
+                }}
                 className="flex items-center px-4 py-2 text-gray-700  hover:bg-black hover:text-white"
               >
                 <data.icon className="w-5 h-5 mr-3" />
