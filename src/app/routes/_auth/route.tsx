@@ -1,17 +1,9 @@
-import { Link } from "@remix-run/react";
-import * as React from "react";
+import { Link, Outlet, useLocation } from "@remix-run/react";
 
-interface AuthLayoutProps {
-  children: React.ReactNode;
-  message: string | undefined;
-  title: string;
-}
+export default function AuthLayout() {
+  const location = useLocation();
+  const isLogin = location.pathname === "/login";
 
-export default function AuthLayout({
-  children,
-  message,
-  title,
-}: AuthLayoutProps) {
   return (
     <div className="bg-white min-h-screen flex">
       <div
@@ -35,26 +27,27 @@ export default function AuthLayout({
         <div className="flex-1">
           <div className="text-center">
             <h2 className="text-4xl font-bold text-center text-gray-700">
-              {title}
+              {isLogin ? "Login" : "Register"}
             </h2>
             <p className="mt-3 text-gray-500">
-              {title === "Login"
+              {isLogin
                 ? "Sign in to access your account"
                 : "Create an account to get started"}
             </p>
           </div>
-          <div className="mt-8">{children}</div>
-          {message && <p className="mt-4 text-sm text-green-600">{message}</p>}
+          <div className="mt-8">
+            <Outlet />
+          </div>
 
           <p className="mt-6 text-center text-sm text-gray-500">
-            {title === "Login"
+            {isLogin
               ? "Don't have an account yet?"
               : "Already have an account?"}{" "}
             <Link
-              to={title === "Login" ? "/signup" : "/login"}
+              to={isLogin ? "/signup" : "/login"}
               className="font-medium text-indigo-600 hover:text-indigo-500"
             >
-              {title === "Login" ? "Register now" : "Login now"}
+              {isLogin ? "Register now" : "Login now"}
             </Link>
           </p>
         </div>

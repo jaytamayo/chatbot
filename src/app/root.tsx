@@ -1,12 +1,23 @@
 import {
+  isRouteErrorResponse,
+  json,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigate,
+  useRouteError,
 } from '@remix-run/react';
 import type { LinksFunction } from '@remix-run/node';
-
+import {
+  QueryClientProvider,
+  QueryClient,
+  HydrationBoundary,
+} from '@tanstack/react-query';
+import { useDehydratedState } from 'use-dehydrated-state';
+import { useState } from 'react';
+import { Button, Label } from '~/components/ui';
 import '~/tailwind.css';
 
 export const links: LinksFunction = () => [
@@ -41,5 +52,61 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            // With SSR, we usually want to set some default staleTime
+            // above 0 to avoid refetching immediately on the client
+            staleTime: 60 * 1000,
+          },
+        },
+      })
+  );
+
+  const dehydratedState = useDehydratedState();
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <HydrationBoundary state={dehydratedState}>
+        <Outlet />
+      </HydrationBoundary>
+    </QueryClientProvider>
+  );
+}
+
+export function ErrorBoundary() {
+  const navigate = useNavigate();
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div className='flex flex-col justify-center items-center h-screen bg-cover 2xl:bg-center bg-no-repeat bg-gradient-to-br from-blue-300 to-gray-200'>
+        <div className='flex flex-col mb-2'>
+          <Label className='font-semibold text-lg text-center'>
+            Looks like you&apos;ve got lost...
+          </Label>
+
+          <Button
+            onClick={() => navigate('/')}
+            className='bg-indigo-400 p-2 rounded-md text-white'
+          >
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  } else if (error instanceof Error) {
+    return (
+      <div>
+        <h1>Error</h1>
+        <p>{error.message}</p>
+        <p>The stack trace is:</p>
+        <pre>{error.stack}</pre>
+      </div>
+    );
+  } else {
+    return <h1>Unknown Error</h1>;
+  }
 }

@@ -1,36 +1,15 @@
 import { EventSourceParserStream } from 'eventsource-parser/stream';
 import { useCallback, useRef, useState } from 'react';
+import { IAnswer } from './logic-hooks';
 
-export interface Docagg {
-  count: number;
-  doc_id: string;
-  doc_name: string;
-}
+import { loader } from '~/app/routes/_private.chat/route';
+import { useLoaderData } from '@remix-run/react';
 
-export interface IChunk {
-  available_int: number; // Whether to enable, 0: not enabled, 1: enabled
-  chunk_id: string;
-  content_with_weight: string;
-  doc_id: string;
-  doc_name: string;
-  img_id: string;
-  important_kwd: any[];
-  positions: number[][];
-}
-
-export interface IReference {
-  chunks: IChunk[];
-  doc_aggs: Docagg[];
-  total: number;
-}
-
-export interface IAnswer {
-  answer: string;
-  reference: IReference;
-  conversationId?: string;
-  prompt?: string;
-  id?: string;
-  audio_binary?: string;
+export interface ResponseType<T = any> {
+  retcode: number;
+  data: T;
+  retmsg: string;
+  status: number;
 }
 
 export const useSendMessageWithSse = (
@@ -38,8 +17,9 @@ export const useSendMessageWithSse = (
 ) => {
   const [answer, setAnswer] = useState<IAnswer>({} as IAnswer);
   const [done, setDone] = useState(true);
-  const [showFinalAnswer, setShowFinalAnswer] = useState(false);
   const timer = useRef<any>();
+
+  const loaderData = useLoaderData<typeof loader>();
 
   const resetAnswer = useCallback(() => {
     if (timer.current) {
@@ -53,21 +33,19 @@ export const useSendMessageWithSse = (
 
   const send = useCallback(
     async (
-      body: any
-      // controller?: AbortController
+      body: any,
+      controller?: AbortController
     ): Promise<{ response: Response; data: ResponseType } | undefined> => {
       try {
         setDone(false);
-
         const response = await fetch(url, {
           method: 'POST',
           headers: {
-            Authorization:
-              'IjU3ZmM1OTMxOTA1YjExZWZiNTJiMDI0MmFjMTIwMDA0Ig.Zxd12g.S6UnRbiqdieZJ1Jf_TlEfX_X2FI',
+            Authorization: loaderData?.authorization,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(body),
-          // signal: controller?.signal,
+          signal: controller?.signal,
         });
 
         const res = response.clone().json();
@@ -82,7 +60,7 @@ export const useSendMessageWithSse = (
           if (x) {
             const { done, value } = x;
             if (done) {
-              setShowFinalAnswer(true);
+              console.info('done');
               resetAnswer();
               break;
             }
@@ -90,6 +68,7 @@ export const useSendMessageWithSse = (
               const val = JSON.parse(value?.data || '');
               const d = val?.data;
               if (typeof d !== 'boolean') {
+                console.info('data:', d);
                 setAnswer({
                   ...d,
                   conversationId: body?.conversation_id,
@@ -100,7 +79,8 @@ export const useSendMessageWithSse = (
             }
           }
         }
-
+        console.info('done?');
+        setDone(true);
         resetAnswer();
         return { data: await res, response };
       } catch (e) {
@@ -110,16 +90,8 @@ export const useSendMessageWithSse = (
         console.warn(e);
       }
     },
-    [url, resetAnswer]
+    [url, loaderData?.authorization, resetAnswer]
   );
 
-  return {
-    send,
-    answer,
-    done,
-    setDone,
-    setShowFinalAnswer,
-    showFinalAnswer,
-    resetAnswer,
-  };
+  return { send, answer, done, setDone, resetAnswer };
 };
