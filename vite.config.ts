@@ -1,7 +1,7 @@
 import { vitePlugin as remix } from '@remix-run/dev';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
-
+import { cjsInterop } from 'vite-plugin-cjs-interop';
 declare module '@remix-run/node' {
   interface Future {
     v3_singleFetch: true;
@@ -10,6 +10,9 @@ declare module '@remix-run/node' {
 
 export default defineConfig({
   plugins: [
+    cjsInterop({
+      dependencies: ['react-copy-to-clipboard'],
+    }),
     remix({
       future: {
         v3_fetcherPersist: true,

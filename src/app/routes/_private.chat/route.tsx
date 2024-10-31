@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   json,
   LoaderFunctionArgs,
@@ -8,9 +8,9 @@ import {
 import get from "lodash/get";
 
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
+  // Avatar,
+  // AvatarFallback,
+  // AvatarImage,
   Button,
   Card,
   CardContent,
@@ -26,13 +26,20 @@ import {
   loader as dialogLoader,
   fetchDialogList,
 } from "~/app/routes/dialog.list/route";
-import { useSendNextMessage } from "~/app/hooks/useSendNextMessage";
+import {
+  MessageType,
+  useSendNextMessage,
+} from "~/app/hooks/useSendNextMessage";
 import { getRagSessionCookie, requireUserSession } from "~/lib/auth";
 import { useSelectDerivedConversationList } from "~/app/hooks/useSelectDerivedConversationList";
 import { useGetChatSearchParams } from "~/app/hooks/useGetChatSearchParams";
 import { useClickDialogCard } from "~/app/hooks/useClickDialogCard";
 import { useQuery } from "@tanstack/react-query";
 import { useLoaderData } from "@remix-run/react";
+import { useFetchUserInfo } from "~/hooks/useFetchUserInfo";
+import MessageItem from "~/components/message-item";
+import { buildMessageItemReference } from "~/utils/chat/buildMessageItemReference";
+import { useFetchNextConversation } from "~/app/hooks/queries/useFetchNextConversation";
 import { createClient } from "~/utils/supabase/server";
 
 export const meta: MetaFunction = () => {
@@ -98,6 +105,9 @@ export default function Chat() {
 
   const { handleClickDialog } = useClickDialogCard();
 
+  const { data: userInfo } = useFetchUserInfo();
+  const { data: conversation } = useFetchNextConversation();
+
   useEffect(() => {
     if (data && data.length > 0) {
       if (data.every((x) => x.id !== dialogId)) {
@@ -137,117 +147,79 @@ export default function Chat() {
     setFileList([]);
   }, [fileList, handlePressEnter, isUploadingFile]);
 
-  const messages = useMemo(() => {
-    if (derivedMessages.length === 0) return [];
-
-    const updatedMessages = [...derivedMessages];
-    const lastMessage = updatedMessages[updatedMessages.length - 1];
-
-    if (lastMessage.role === "assistant" && sendLoading) {
-      updatedMessages[updatedMessages.length - 1] = {
-        ...lastMessage,
-        content: "Bot is typing...",
-      };
-    }
-
-    return updatedMessages;
-  }, [derivedMessages, sendLoading]);
-
-  const handlePreparedQuestionClick = useCallback(
-    async (question: string) => {
-      if (isUploadingFile) return;
-      const ids = getFileIds(fileList.filter((x) => isUploadSuccess(x)));
-
-      await handleInputChange({
-        target: { value: question },
-      } as React.ChangeEvent<HTMLInputElement>);
-
-      handlePressEnter(ids);
-
-      setFileList([]);
-    },
-    [fileList, handleInputChange, handlePressEnter]
-  );
-
   return (
     <div className="flex-1 overflow-hidden p-2 sm:p-4 md:p-6 lg:p-8">
-      <Card className="flex flex-col h-full w-full max-w-4xl mx-auto shadow-xl rounded-xl overflow-hidden">
-        <CardHeader className="p-3 sm:p-4 md:p-6 bg-primary text-primary-foreground rounded-t-xl">
+      <Card className="flex flex-col h-full w-full max-w-4xl mx-auto shadow-xl">
+        <CardHeader className="p-3 sm:p-4 md:p-6 bg-primary text-primary-foreground">
           <CardTitle className="flex items-center text-base sm:text-lg md:text-xl lg:text-2xl">
             <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 mr-2" />
-            {data?.[0]?.name}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-grow overflow-hidden p-2 sm:p-4 md:p-6">
           <ScrollArea className="h-full pr-4">
-            <div className="h-full flex flex-col space-y-4">
-              {messages.map((message, index) => (
-                <>
-                  <div
-                    key={index}
-                    className={`flex ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    <div
-                      className={`flex items-start max-w-[80%] ${
-                        message.role === "user"
-                          ? "flex-row-reverse"
-                          : "flex-row"
-                      }`}
-                    >
-                      <Avatar className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
-                        <AvatarImage
-                          src={
-                            message.role === "assistant"
-                              ? "https://i.pravatar.cc/150?img=1"
-                              : "https://i.pravatar.cc/150?img=3"
-                          }
-                          alt={message.role}
-                        />
-                        <AvatarFallback>
-                          {message.role === "user" ? "U" : "A"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div
-                        className={`mx-1 sm:mx-2 p-1.5 sm:p-2 rounded-lg text-sm sm:text-sm md:text-base ${
-                          message.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
-                        }`}
-                      >
-                        {message.role === "assistant" &&
-                        sendLoading &&
-                        index === messages.length - 1 ? (
-                          <span className="animate-pulse">
-                            {message.content}
-                          </span>
-                        ) : (
-                          message.content
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {message.role === "assistant" && (
-                    <div className="grid gap-2">
-                      {chatData?.map(
-                        (chat: { question: string }, index: number) => (
-                          <Button
-                            key={index}
-                            type="button"
-                            variant="outline"
-                            className="text-left h-auto whitespace-normal"
-                            onClick={() =>
-                              handlePreparedQuestionClick(chat?.question)
-                            }
-                          >
-                            {chat?.question}
-                          </Button>
-                        )
-                      )}
-                    </div>
+            <div className="flex flex-col space-y-4">
+              {derivedMessages.map((message, index) => (
+                // <div
+                //   key={index}
+                //   className={`flex ${
+                //     message.role === "user" ? "justify-end" : "justify-start"
+                //   }`}
+                // >
+                //   <div
+                //     className={`flex items-start max-w-[80%] ${
+                //       message.role === "user" ? "flex-row-reverse" : "flex-row"
+                //     }`}
+                //   >
+                //     <Avatar className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
+                //       <AvatarImage
+                //         src={
+                //           message.role === "assistant"
+                //             ? "https://i.pravatar.cc/150?img=1"
+                //             : "https://i.pravatar.cc/150?img=3"
+                //         }
+                //         alt={message.role}
+                //       />
+                //       <AvatarFallback>
+                //         {message.role === "user" ? "U" : "A"}
+                //       </AvatarFallback>
+                //     </Avatar>
+                //     <div
+                //       className={`mx-1 sm:mx-2 p-1.5 sm:p-2 rounded-lg text-sm sm:text-sm md:text-base ${
+                //         message.role === "user"
+                //           ? "bg-primary text-primary-foreground"
+                //           : "bg-muted"
+                //       }`}
+                //     >
+                //       {message.role === "assistant" &&
+                //       sendLoading &&
+                //       index === messages.length - 1 ? (
+                //         <span className="animate-pulse">{message.content}</span>
+                //       ) : (
+                //         message.content
+                //       )}
+                //     </div>
+                //   </div>
+                // </div>
+                <MessageItem
+                  loading={
+                    message.role === MessageType.Assistant &&
+                    sendLoading &&
+                    derivedMessages.length - 1 === index
+                  }
+                  key={message.id}
+                  item={message}
+                  nickname={userInfo.nickname}
+                  avatar={userInfo.avatar}
+                  reference={buildMessageItemReference(
+                    {
+                      message: derivedMessages,
+                      reference: conversation.reference,
+                    },
+                    message
                   )}
-                </>
+                  index={index}
+                  sendLoading={sendLoading}
+                />
               ))}
             </div>
             <div ref={ref} />

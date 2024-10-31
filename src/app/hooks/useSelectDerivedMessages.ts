@@ -2,8 +2,8 @@ import { useCallback, useState } from 'react';
 import { useScrollToBottom } from './useScrollToBottom';
 import { MessageType } from './useSendNextMessage';
 import { buildMessageUuid } from '~/utils/chat/buildMessageUuid';
-import { Docagg, IChunk } from '~/app/hooks/logic-hooks';
 import { getMessagePureId } from '~/utils/chat/getMessagePureId';
+import { IReference } from '~/features/chat/components/types';
 
 export interface Message {
   content: string;
@@ -12,21 +12,6 @@ export interface Message {
   prompt?: string;
   id?: string;
   audio_binary?: string;
-}
-
-export interface IAnswer {
-  answer: string;
-  reference: IReference;
-  conversationId?: string;
-  prompt?: string;
-  id?: string;
-  audio_binary?: string;
-}
-
-export interface IReference {
-  chunks: IChunk[];
-  doc_aggs: Docagg[];
-  total: number;
 }
 
 export interface IMessage extends Message {
