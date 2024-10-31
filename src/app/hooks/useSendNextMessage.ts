@@ -137,6 +137,7 @@ export const useSendNextMessage = (controller: AbortController) => {
   return {
     handlePressEnter,
     handleInputChange,
+    handleSendMessage,
     value,
     setValue,
     regenerateMessage,
