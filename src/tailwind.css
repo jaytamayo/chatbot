@@ -89,3 +89,35 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.chunkText {
+  em {
+    color: red;
+    font-style: normal;
+  }
+  table {
+    width: 100%;
+  }
+
+  caption {
+    color: blurBackground;
+    font-size: 14px;
+    height: 20px;
+    line-height: 20px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  th {
+    color: #fff;
+    background-color: blurBackground;
+  }
+
+  td:hover {
+    background: blurBackgroundHover;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+}
