@@ -8,5 +8,5 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/dashboard');
   }
 
-  return null;
+  return session;
 }

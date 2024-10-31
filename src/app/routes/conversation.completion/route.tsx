@@ -24,9 +24,5 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const res = response.clone().json();
 
-  console.log('res', res);
-
-  console.log('response', response);
-
   return null;
 }
