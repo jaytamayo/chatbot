@@ -5,7 +5,6 @@ import { v4 as uuid } from "uuid";
 import { useHandleMessageInputChange } from "./useHandleMessageInputChange";
 import { useSelectNextMessages } from "./useSelectNextMessages";
 import { Message } from "./useSelectDerivedMessages";
-import { useSearchParams } from "@remix-run/react";
 import { useSetChatRouteParams } from "./useSetChatRouteParams";
 import { useSetConversation } from "./useSetConversation";
 import { useSendMessageWithSse } from "./useSendMessageWithSse";
@@ -134,8 +133,35 @@ export const useSendNextMessage = (controller: AbortController) => {
     [addNewestQuestion, handleSendMessage, done, setValue, value]
   );
 
+  // Callback used for handlePressEnter for suggested questions
+  const handlePressQuestion = useCallback(
+    (question: string) => {
+      if (trim(question) === "") return;
+
+      const id = uuid();
+
+      addNewestQuestion({
+        content: question,
+        doc_ids: [],
+        id,
+        role: MessageType.User,
+      });
+      if (done) {
+        setValue("");
+        handleSendMessage({
+          id,
+          content: question.trim(),
+          role: MessageType.User,
+          doc_ids: [],
+        });
+      }
+    },
+    [addNewestQuestion, handleSendMessage, done]
+  );
+
   return {
     handlePressEnter,
+    handlePressQuestion,
     handleInputChange,
     handleSendMessage,
     value,

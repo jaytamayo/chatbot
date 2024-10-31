@@ -29,3 +29,9 @@ export interface IAnswer {
   id?: string;
   audio_binary?: string;
 }
+
+export interface IChat {
+  created_at: string;
+  id: number;
+  question: string;
+}

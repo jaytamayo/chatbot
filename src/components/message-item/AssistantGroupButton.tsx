@@ -1,10 +1,16 @@
-import { useCallback } from 'react';
-import { DislikeOutlined, LikeOutlined } from '@ant-design/icons';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { useSendFeedback } from './hooks';
-import FeedbackModal from './FeedBackModal';
-import CopyToClipboard from '../CopyToClipboard';
-import { RadioGroupIndicator } from '@radix-ui/react-radio-group';
+import { useCallback } from "react";
+import { DislikeOutlined, LikeOutlined } from "@ant-design/icons";
+import { useSendFeedback } from "./hooks";
+import FeedbackModal from "./FeedBackModal";
+import CopyToClipboard from "../CopyToClipboard";
+import {
+  RadioGroup,
+  RadioGroupItem,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui";
 
 interface IProps {
   messageId: string;
@@ -26,38 +32,70 @@ export const AssistantGroupButton = ({
 
   return (
     <>
-      {/* need to fix styles */}
-      <RadioGroup>
-        <RadioGroupItem id='copy' className='hidden' value='copy'>
-          <RadioGroupIndicator className='relative flex size-full items-center justify-center after:block after:size-[11px] after:rounded-full after:bg-violet11' />
-        </RadioGroupItem>
-        <label htmlFor='copy'>
-          <CopyToClipboard text={content} />
-        </label>
+      <RadioGroup className="flex items-center ">
+        <div className="flex items-start">
+          <RadioGroupItem id="copy" value="copy" className="sr-only peer" />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <label
+                  htmlFor="copy"
+                  className="cursor-pointer p-2 rounded-full hover:bg-gray-100 peer-checked:bg-gray-200"
+                >
+                  <CopyToClipboard text={content} />
+                </label>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy to clipboard</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
         {showLikeButton && (
           <>
-            <RadioGroupItem
-              id='like'
-              className='hidden'
-              value='like'
-              onClick={handleLike}
-            >
-              <RadioGroupIndicator className='RadioGroupIndicator' />
-            </RadioGroupItem>
-            <label htmlFor='like'>
-              <LikeOutlined />
-            </label>
-            <RadioGroupItem
-              id='dislike'
-              className='hidden'
-              value='dislike'
-              onClick={showModal}
-            >
-              <RadioGroupIndicator className='RadioGroupIndicator' />
-            </RadioGroupItem>
-            <label htmlFor='dislike'>
-              <DislikeOutlined />
-            </label>
+            <div className="flex items-center">
+              <RadioGroupItem id="like" value="like" className="sr-only peer" />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <label
+                      htmlFor="like"
+                      className="cursor-pointer p-2 rounded-full hover:bg-gray-100 peer-checked:bg-gray-200"
+                    >
+                      <LikeOutlined onClick={handleLike} />
+                    </label>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Like</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            <div className="flex items-center">
+              <RadioGroupItem
+                id="dislike"
+                value="dislike"
+                className="sr-only peer"
+                onClick={showModal}
+              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <label
+                      htmlFor="dislike"
+                      className="cursor-pointer p-2 rounded-full hover:bg-gray-100 peer-checked:bg-gray-200"
+                    >
+                      <DislikeOutlined />
+                    </label>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Dislike</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </>
         )}
       </RadioGroup>

@@ -75,7 +75,8 @@ export const loader: LoaderFunction = async ({
 };
 
 export default function Chat() {
-  const { authorization, data: chatData } = useLoaderData<typeof loader>();
+  const { authorization, data: suggestedQuestionsData } =
+    useLoaderData<typeof loader>();
 
   const { data } = useQuery({
     queryKey: ["dialogList", authorization],
@@ -95,6 +96,7 @@ export default function Chat() {
     derivedMessages,
     handleInputChange,
     handlePressEnter,
+    handlePressQuestion,
   } = useSendNextMessage(controller);
 
   const handleCreateTemporaryConversation = useCallback(() => {
@@ -149,10 +151,11 @@ export default function Chat() {
 
   return (
     <div className="flex-1 overflow-hidden p-2 sm:p-4 md:p-6 lg:p-8">
-      <Card className="flex flex-col h-full w-full max-w-4xl mx-auto shadow-xl">
-        <CardHeader className="p-3 sm:p-4 md:p-6 bg-primary text-primary-foreground">
+      <Card className="flex flex-col h-full w-full max-w-4xl mx-auto shadow-xl rounded-xl overflow-hidden">
+        <CardHeader className="p-3 sm:p-4 md:p-6 bg-primary text-primary-foreground rounded-t-xl">
           <CardTitle className="flex items-center text-base sm:text-lg md:text-xl lg:text-2xl">
             <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 mr-2" />
+            {data?.[0]?.name}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-grow overflow-hidden p-2 sm:p-4 md:p-6">
@@ -201,6 +204,7 @@ export default function Chat() {
                 //   </div>
                 // </div>
                 <MessageItem
+                  suggestedQuestionsData={suggestedQuestionsData}
                   loading={
                     message.role === MessageType.Assistant &&
                     sendLoading &&
@@ -217,7 +221,9 @@ export default function Chat() {
                     },
                     message
                   )}
+                  prologue={data?.[0]?.prompt_config?.prologue}
                   index={index}
+                  onPressQuestion={handlePressQuestion}
                   sendLoading={sendLoading}
                 />
               ))}
