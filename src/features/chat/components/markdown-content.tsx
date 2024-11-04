@@ -19,6 +19,7 @@ const MarkdownContent = ({
   content,
   onPressQuestion,
   loading,
+  sendLoading,
 }: {
   suggestedQuestionsData: Array<IChat>;
   content: string;
@@ -26,6 +27,7 @@ const MarkdownContent = ({
   onPressQuestion: (question: string) => void;
   prologue?: string;
   reference: IReference;
+  sendLoading?: boolean;
 }) => {
   const { t } = useTranslation();
 
@@ -78,9 +80,10 @@ const MarkdownContent = ({
           {text === prologue?.split("\n")?.[0] && (
             <div className="grid gap-1 mt-2">
               {suggestedQuestionsData?.map(
-                (chat: { question: string }, index: number) => (
+                (chat: { question: string }, chatIndex: number) => (
                   <Button
-                    key={index}
+                    disabled={sendLoading}
+                    key={chatIndex}
                     type="button"
                     variant="outline"
                     className="text-left h-auto whitespace-normal"

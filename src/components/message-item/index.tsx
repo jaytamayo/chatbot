@@ -30,6 +30,7 @@ const MessageItem = ({
   index,
   onPressQuestion,
   prologue,
+  sendLoading,
   showLikeButton = true,
 }: IProps) => {
   const isAssistant = item.role === MessageType.Assistant;
@@ -71,6 +72,7 @@ const MessageItem = ({
                   onPressQuestion={onPressQuestion}
                   reference={reference}
                   prologue={prologue}
+                  sendLoading={sendLoading}
                 />
               </div>
             </div>
