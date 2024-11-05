@@ -2,7 +2,7 @@ import { EventSourceParserStream } from 'eventsource-parser/stream';
 import { useCallback, useRef, useState } from 'react';
 import { loader } from '~/app/routes/_private.chat/route';
 import { useLoaderData } from '@remix-run/react';
-import { IAnswer } from '~/features/chat/components/types';
+import { IAnswer } from '~/features/chat/types';
 
 export interface ResponseType<T = any> {
   retcode: number;

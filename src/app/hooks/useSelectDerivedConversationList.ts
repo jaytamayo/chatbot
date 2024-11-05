@@ -57,8 +57,6 @@ export const useSelectDerivedConversationList = () => {
     });
   }, [conversationList, dialogId, prologue, setNewConversationRouteParams]);
 
-  // When you first enter the page, select the top conversation card
-
   useEffect(() => {
     setList([...conversationList]);
   }, [conversationList]);
