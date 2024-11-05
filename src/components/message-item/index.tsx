@@ -17,7 +17,6 @@ interface IProps {
   avatar?: string;
   index: number;
   onPressQuestion(question: string): void;
-  prologue?: string;
   showLikeButton?: boolean;
 }
 
@@ -29,7 +28,6 @@ const MessageItem = ({
   avatar = "https://i.pravatar.cc/150?img=3",
   index,
   onPressQuestion,
-  prologue,
   sendLoading,
   showLikeButton = true,
 }: IProps) => {
@@ -66,12 +64,12 @@ const MessageItem = ({
               </div>
               <div className={styles.markdownSection(isAssistant)}>
                 <MarkdownContent
+                  index={index}
                   suggestedQuestionsData={suggestedQuestionsData}
                   loading={loading}
                   content={item.content}
                   onPressQuestion={onPressQuestion}
                   reference={reference}
-                  prologue={prologue}
                   sendLoading={sendLoading}
                 />
               </div>

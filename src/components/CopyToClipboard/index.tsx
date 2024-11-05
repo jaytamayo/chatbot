@@ -25,7 +25,11 @@ const CopyToClipboard = ({ text }: Props) => {
       <Tooltip>
         <TooltipTrigger>
           <Clipboard text={text} onCopy={handleCopy}>
-            {copied ? <Check /> : <Files />}
+            {copied ? (
+              <Check className="size-5" />
+            ) : (
+              <Files className="size-5" />
+            )}
           </Clipboard>
         </TooltipTrigger>
         <TooltipContent>

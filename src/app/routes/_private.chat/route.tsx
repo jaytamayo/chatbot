@@ -221,7 +221,6 @@ export default function Chat() {
                     },
                     message
                   )}
-                  prologue={data?.[0]?.prompt_config?.prologue}
                   index={index}
                   onPressQuestion={handlePressQuestion}
                   sendLoading={sendLoading}

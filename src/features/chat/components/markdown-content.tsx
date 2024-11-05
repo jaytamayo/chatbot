@@ -13,7 +13,7 @@ const reg = /(#{2}\d+\${2})/g;
 const curReg = /(~{2}\d+\${2})/g;
 
 const MarkdownContent = ({
-  prologue,
+  index,
   suggestedQuestionsData,
   reference,
   content,
@@ -21,11 +21,11 @@ const MarkdownContent = ({
   loading,
   sendLoading,
 }: {
+  index: number;
   suggestedQuestionsData: Array<IChat>;
-  content: string;
+  content: any;
   loading: boolean;
   onPressQuestion: (question: string) => void;
-  prologue?: string;
   reference: IReference;
   sendLoading?: boolean;
 }) => {
@@ -73,29 +73,10 @@ const MarkdownContent = ({
         <span key={i}></span>
       ));
 
-      return (
-        <>
-          {replacedText}
-
-          {text === prologue?.split("\n")?.[0] && (
-            <div className="grid gap-1 mt-2">
-              {suggestedQuestionsData?.map(
-                (chat: { question: string }, chatIndex: number) => (
-                  <Button
-                    disabled={sendLoading}
-                    key={chatIndex}
-                    type="button"
-                    variant="outline"
-                    className="text-left h-auto whitespace-normal"
-                    onClick={() => onPressQuestion(chat?.question)}
-                  >
-                    {chat?.question}
-                  </Button>
-                )
-              )}
-            </div>
-          )}
-        </>
+      return replacedText?.[0] === t("chat.searching") ? (
+        <span className="animate-pulse">{replacedText}</span>
+      ) : (
+        replacedText
       );
     },
     [onPressQuestion]
@@ -128,6 +109,25 @@ const MarkdownContent = ({
       >
         {contentWithCursor}
       </Markdown>
+
+      {index % 2 === 0 && !loading && (
+        <div className="grid gap-1 mt-2">
+          {suggestedQuestionsData?.map(
+            (chat: { question: string }, chatIndex: number) => (
+              <Button
+                disabled={sendLoading}
+                key={chatIndex}
+                type="button"
+                variant="outline"
+                className="text-left h-auto whitespace-normal"
+                onClick={() => onPressQuestion(chat?.question)}
+              >
+                {chat?.question}
+              </Button>
+            )
+          )}
+        </div>
+      )}
     </>
   );
 };

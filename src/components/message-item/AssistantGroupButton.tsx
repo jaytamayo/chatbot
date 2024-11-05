@@ -45,7 +45,7 @@ export const AssistantGroupButton = ({
               <RadioGroupIndicator className="RadioGroupIndicator" />
             </RadioGroupItem>
             <label htmlFor="like">
-              <ThumbsUp />
+              <ThumbsUp className="cursor-pointer size-5" />
             </label>
             <RadioGroupItem
               id="dislike"
@@ -56,7 +56,7 @@ export const AssistantGroupButton = ({
               <RadioGroupIndicator className="RadioGroupIndicator" />
             </RadioGroupItem>
             <label htmlFor="dislike">
-              <ThumbsDown />
+              <ThumbsDown className="cursor-pointer size-5" />
             </label>
           </>
         )}
