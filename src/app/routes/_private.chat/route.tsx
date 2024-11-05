@@ -213,7 +213,7 @@ export default function Chat() {
                   key={message.id}
                   item={message}
                   nickname={userInfo.nickname}
-                  avatar={userInfo.avatar}
+                  avatar={userInfo.avatar || "https://i.pravatar.cc/150?img=3"}
                   reference={buildMessageItemReference(
                     {
                       message: derivedMessages,

@@ -25,7 +25,7 @@ const MessageItem = ({
   suggestedQuestionsData,
   reference,
   loading = false,
-  avatar = "https://i.pravatar.cc/150?img=3",
+  avatar = "",
   index,
   onPressQuestion,
   sendLoading,
