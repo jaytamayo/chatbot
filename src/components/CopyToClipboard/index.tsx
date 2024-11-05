@@ -1,17 +1,17 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { CopyToClipboard as Clipboard, Props } from 'react-copy-to-clipboard';
-import { CheckOutlined, CopyOutlined } from '@ant-design/icons';
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { CopyToClipboard as Clipboard, Props } from "react-copy-to-clipboard";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '../ui/tooltip';
+} from "../ui/tooltip";
+import { Check, Files } from "lucide-react";
 
 const CopyToClipboard = ({ text }: Props) => {
   const [copied, setCopied] = useState(false);
-  const { t } = useTranslation('common');
+  const { t } = useTranslation("common");
 
   const handleCopy = () => {
     setCopied(true);
@@ -25,11 +25,15 @@ const CopyToClipboard = ({ text }: Props) => {
       <Tooltip>
         <TooltipTrigger>
           <Clipboard text={text} onCopy={handleCopy}>
-            {copied ? <CheckOutlined /> : <CopyOutlined />}
+            {copied ? (
+              <Check className="size-5" />
+            ) : (
+              <Files className="size-5" />
+            )}
           </Clipboard>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{copied ? t('copied') : t('copy')}</p>
+          <p>{copied ? t("copied") : t("copy")}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

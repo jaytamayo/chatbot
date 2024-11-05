@@ -104,7 +104,9 @@ export default function Users() {
   };
 
   return (
-    <main className="p-4 md:p-6">
+    <main className="p-4 md:p-6 bg-gray-800">
+      <h1 className="mb-4 text-2xl font-bold md:text-3xl">Users</h1>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -183,7 +185,7 @@ export default function Users() {
           <TableBody>
             {sortedUsers.map((user) => (
               <React.Fragment key={user.id}>
-                <TableRow>
+                <TableRow className="text-gray-900">
                   <TableCell>
                     <Avatar>
                       <AvatarImage src={user.avatarUrl} alt={user.name} />
@@ -206,11 +208,11 @@ export default function Users() {
                       {user.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="hidden xl:table-cell">
+                  <TableCell className="hidden xl:table-cell ">
                     {user.lastActive}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end items-center">
+                  <TableCell className="text-right ">
+                    <div className="flex justify-end items-center ">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -230,7 +232,10 @@ export default function Users() {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent
+                          align="end"
+                          className="text-gray-900"
+                        >
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem>
                             <Link to={`/users/${user.id}`}>View details</Link>
@@ -244,7 +249,7 @@ export default function Users() {
                   </TableCell>
                 </TableRow>
                 {expandedRows.includes(user.id) && (
-                  <TableRow className="md:hidden">
+                  <TableRow className="md:hidden text-gray-900">
                     <TableCell colSpan={7}>
                       <div className="p-2 space-y-2">
                         <div>

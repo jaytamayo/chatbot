@@ -1,10 +1,10 @@
-import { useCallback } from 'react';
-import { DislikeOutlined, LikeOutlined } from '@ant-design/icons';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { useSendFeedback } from './hooks';
-import FeedbackModal from './FeedBackModal';
-import CopyToClipboard from '../CopyToClipboard';
-import { RadioGroupIndicator } from '@radix-ui/react-radio-group';
+import { useCallback } from "react";
+import { useSendFeedback } from "./hooks";
+import FeedbackModal from "./FeedBackModal";
+import CopyToClipboard from "../CopyToClipboard";
+import { RadioGroup, RadioGroupItem } from "~/components/ui";
+import { RadioGroupIndicator } from "@radix-ui/react-radio-group";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
 
 interface IProps {
   messageId: string;
@@ -26,37 +26,37 @@ export const AssistantGroupButton = ({
 
   return (
     <>
-      {/* need to fix styles */}
-      <RadioGroup>
-        <RadioGroupItem id='copy' className='hidden' value='copy'>
-          <RadioGroupIndicator className='relative flex size-full items-center justify-center after:block after:size-[11px] after:rounded-full after:bg-violet11' />
+      <RadioGroup className="flex items-center ">
+        <RadioGroupItem id="copy" className="hidden" value="copy">
+          <RadioGroupIndicator className="relative flex size-full items-center justify-center after:block after:size-[11px] after:rounded-full after:bg-violet11" />
         </RadioGroupItem>
-        <label htmlFor='copy'>
+        <label htmlFor="copy">
           <CopyToClipboard text={content} />
         </label>
+
         {showLikeButton && (
           <>
             <RadioGroupItem
-              id='like'
-              className='hidden'
-              value='like'
+              id="like"
+              className="hidden"
+              value="like"
               onClick={handleLike}
             >
-              <RadioGroupIndicator className='RadioGroupIndicator' />
+              <RadioGroupIndicator className="RadioGroupIndicator" />
             </RadioGroupItem>
-            <label htmlFor='like'>
-              <LikeOutlined />
+            <label htmlFor="like">
+              <ThumbsUp className="cursor-pointer size-5" />
             </label>
             <RadioGroupItem
-              id='dislike'
-              className='hidden'
-              value='dislike'
+              id="dislike"
+              className="hidden"
+              value="dislike"
               onClick={showModal}
             >
-              <RadioGroupIndicator className='RadioGroupIndicator' />
+              <RadioGroupIndicator className="RadioGroupIndicator" />
             </RadioGroupItem>
-            <label htmlFor='dislike'>
-              <DislikeOutlined />
+            <label htmlFor="dislike">
+              <ThumbsDown className="cursor-pointer size-5" />
             </label>
           </>
         )}

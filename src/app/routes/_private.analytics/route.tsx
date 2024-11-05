@@ -85,7 +85,7 @@ export default function Analytics() {
         </Card>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 text-gray-900">
         <div className="md:hidden">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -109,7 +109,7 @@ export default function Analytics() {
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="space-y-4"
+          className="space-y-4 text-gray-900"
         >
           <TabsList className="hidden w-full grid-cols-4 md:grid">
             {tabItems.map((item) => (

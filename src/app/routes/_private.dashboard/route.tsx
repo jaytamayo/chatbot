@@ -12,9 +12,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 const Dashboard = () => {
   return (
     <>
-      <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-800">
         <div className="container mx-auto px-6 py-8">
-          <h3 className="text-3xl font-medium text-gray-700">Dashboard</h3>
+          <h3 className="text-3xl font-medium ">Dashboard</h3>
           <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
