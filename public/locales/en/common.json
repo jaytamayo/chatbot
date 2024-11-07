@@ -1,4 +1,6 @@
 {
   "copy": "Copy",
-  "copied": "Copied"
+  "copied": "Copied",
+  "dislike": "Dislike",
+  "like": "Like"
 }
