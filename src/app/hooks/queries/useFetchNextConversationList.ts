@@ -7,30 +7,29 @@ import { useSetNewConversationRouteParams } from '../useSetNewConversationRouteP
 
 export const useFetchNextConversationList = () => {
   const loaderData = useLoaderData<typeof loader>();
-  const { conversationId, dialogId } = useGetChatSearchParams();
+  const { dialogId } = useGetChatSearchParams();
 
   const { setNewConversationRouteParams } = useSetNewConversationRouteParams();
+
   const {
     data,
     isFetching: loading,
     refetch,
   } = useQuery<IConversation[]>({
-    queryKey: ['fetchConversationList', dialogId],
+    queryKey: ['fetchConversationList'],
     initialData: [],
     gcTime: 0,
     refetchOnWindowFocus: false,
+    enabled: !!dialogId,
     queryFn: async () => {
       const response = await fetch(
-        'http://127.0.0.1:9380/v1/conversation/list',
+        `http://127.0.0.1:9380/v1/conversation/list?dialog_id=${dialogId}`,
         {
           method: 'GET',
           headers: {
             Authorization: loaderData?.authorization,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            conversationId,
-          }),
         }
       );
 

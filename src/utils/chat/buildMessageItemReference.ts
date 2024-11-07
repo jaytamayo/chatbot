@@ -1,6 +1,6 @@
 import { IMessage } from '~/app/hooks/useSelectDerivedMessages';
 import { MessageType } from '~/app/hooks/useSendNextMessage';
-import { IReference } from '~/features/chat/components/types';
+import { IReference } from '~/features/chat/types';
 
 export const buildMessageItemReference = (
   conversation: { message: IMessage[]; reference: IReference[] },

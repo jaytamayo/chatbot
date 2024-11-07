@@ -54,7 +54,6 @@ export let handle = {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   let { locale } = useLoaderData<typeof loader>();
-
   let { i18n } = useTranslation();
 
   // This hook will change the i18n instance language to the current locale
@@ -62,6 +61,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   // language, this locale will change and i18next will load the correct
   // translation files
   useChangeLanguage(locale);
+
   return (
     <html lang={locale} dir={i18n.dir()}>
       <head>

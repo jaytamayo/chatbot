@@ -3,7 +3,7 @@ import { useScrollToBottom } from './useScrollToBottom';
 import { MessageType } from './useSendNextMessage';
 import { buildMessageUuid } from '~/utils/chat/buildMessageUuid';
 import { getMessagePureId } from '~/utils/chat/getMessagePureId';
-import { IReference } from '~/features/chat/components/types';
+import { IReference } from '~/features/chat/types';
 
 export interface Message {
   content: string;

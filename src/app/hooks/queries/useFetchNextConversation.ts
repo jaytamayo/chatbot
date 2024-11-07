@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { useGetChatSearchParams } from '../useGetChatSearchParams';
-import { IMessage, IReference, Message } from '../useSelectDerivedMessages';
-import { isConversationIdExist } from '~/app/routes/conversation.get/route';
-import { buildMessageListWithUuid } from '~/utils/chat/buildMessageListWithUuid';
-import { loader } from '~/app/routes/_private.chat/route';
 import { useLoaderData } from '@remix-run/react';
+
+import { useGetChatSearchParams } from '../useGetChatSearchParams';
+import { isConversationIdExist } from '~/app/routes/conversation.get/route';
+import { loader } from '~/app/routes/_private.chat/route';
+import { buildMessageListWithUuid } from '~/utils/chat/buildMessageListWithUuid';
+import { IReference } from '~/features/chat/types';
+import { IMessage, Message } from '../useSelectDerivedMessages';
 
 // Hook for fetching the contents of selected existing chat/conversation
 export const useFetchNextConversation = () => {
@@ -18,22 +20,18 @@ export const useFetchNextConversation = () => {
   } = useQuery<IClientConversation>({
     queryKey: ['fetchConversation', conversationId],
     initialData: {} as IClientConversation,
-    // enabled: isConversationIdExist(conversationId),
     gcTime: 0,
     refetchOnWindowFocus: false,
     queryFn: async () => {
       if (isNew !== 'true' && isConversationIdExist(conversationId)) {
         const response = await fetch(
-          'http://127.0.0.1:9380/v1//conversation/get',
+          `http://127.0.0.1:9380/v1/conversation/get?conversation_id=${conversationId}`,
           {
             method: 'GET',
             headers: {
               Authorization: loaderData?.authorization,
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              conversationId,
-            }),
           }
         );
 

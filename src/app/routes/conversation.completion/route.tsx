@@ -8,8 +8,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const userInput = body.get('chatInput');
 
-  console.log('userInput', userInput);
-
   const response = await fetch(
     'http://localhost:9380/v1/conversation/completion',
     {

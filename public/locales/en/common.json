@@ -1,10 +1,4 @@
 {
-  "common": {
-    "copy": "Copy",
-    "copied": "Copied"
-  },
-  "chat": {
-    "regenerate": "Regenerate",
-    "searching": "searching..."
-  }
+  "copy": "Copy",
+  "copied": "Copied"
 }

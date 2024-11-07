@@ -1,16 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 import {
   json,
   LoaderFunctionArgs,
   LoaderFunction,
   MetaFunction,
-} from "@remix-run/node";
-import get from "lodash/get";
+} from '@remix-run/node';
+import get from 'lodash/get';
 
 import {
-  // Avatar,
-  // AvatarFallback,
-  // AvatarImage,
   Button,
   Card,
   CardContent,
@@ -19,33 +16,41 @@ import {
   CardTitle,
   Input,
   ScrollArea,
-} from "~/components/ui";
-import { MessageCircle, Send } from "lucide-react";
+} from '~/components/ui';
+import { MessageCircle, Send } from 'lucide-react';
 
 import {
   loader as dialogLoader,
   fetchDialogList,
-} from "~/app/routes/dialog.list/route";
+} from '~/app/routes/dialog.list/route';
+import {
+  loader as conversationLoader,
+  fetchConversationById,
+} from '../conversation.get/route';
+
 import {
   MessageType,
   useSendNextMessage,
-} from "~/app/hooks/useSendNextMessage";
-import { getRagSessionCookie, requireUserSession } from "~/lib/auth";
-import { useSelectDerivedConversationList } from "~/app/hooks/useSelectDerivedConversationList";
-import { useGetChatSearchParams } from "~/app/hooks/useGetChatSearchParams";
-import { useClickDialogCard } from "~/app/hooks/useClickDialogCard";
-import { useQuery } from "@tanstack/react-query";
-import { useLoaderData } from "@remix-run/react";
-import { useFetchUserInfo } from "~/hooks/useFetchUserInfo";
-import MessageItem from "~/components/message-item";
-import { buildMessageItemReference } from "~/utils/chat/buildMessageItemReference";
-import { useFetchNextConversation } from "~/app/hooks/queries/useFetchNextConversation";
-import { createClient } from "~/utils/supabase/server";
+} from '~/app/hooks/useSendNextMessage';
+import { getRagSessionCookie, requireUserSession } from '~/lib/auth';
+import { useSelectDerivedConversationList } from '~/app/hooks/useSelectDerivedConversationList';
+import { useGetChatSearchParams } from '~/app/hooks/useGetChatSearchParams';
+import { useClickDialogCard } from '~/app/hooks/useClickDialogCard';
+import { useQuery } from '@tanstack/react-query';
+import { useLoaderData } from '@remix-run/react';
+import { useFetchUserInfo } from '~/hooks/useFetchUserInfo';
+import MessageItem from '~/components/message-item';
+import { buildMessageItemReference } from '~/utils/chat/buildMessageItemReference';
+import { createClient } from '~/utils/supabase/server';
+
+interface IProps {
+  controller: AbortController;
+}
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Chatbot" },
-    { name: "description", content: "Chat with AI assistant!" },
+    { title: 'Chatbot' },
+    { name: 'description', content: 'Chat with AI assistant!' },
   ];
 };
 
@@ -56,7 +61,7 @@ export const loader: LoaderFunction = async ({
 
   const supabase = await createClient(request);
 
-  const { data, error } = await supabase.from("chat").select("*");
+  const { data, error } = await supabase.from('chat').select('*');
 
   if (error) {
     throw new Error(error.message);
@@ -74,20 +79,27 @@ export const loader: LoaderFunction = async ({
   }
 };
 
-export default function Chat() {
+export default function Chat({ controller }: IProps) {
   const { authorization, data: suggestedQuestionsData } =
     useLoaderData<typeof loader>();
 
-  const { data } = useQuery({
-    queryKey: ["dialogList", authorization],
+  const { conversationId, isNew } = useGetChatSearchParams();
+
+  const { data: dialogListData } = useQuery({
+    queryKey: ['dialogList', authorization],
     queryFn: fetchDialogList,
   });
 
+  const { data: conversationData } = useQuery({
+    queryKey: ['fetchConversation', conversationId],
+    queryFn: () =>
+      fetchConversationById({ authorization, conversationId, isNew }),
+    refetchOnWindowFocus: false,
+    enabled: !!conversationId,
+  });
+
   const { addTemporaryConversation } = useSelectDerivedConversationList();
-
   const { dialogId } = useGetChatSearchParams();
-
-  const [controller] = useState(new AbortController());
 
   const {
     ref,
@@ -103,20 +115,18 @@ export default function Chat() {
     addTemporaryConversation();
   }, [addTemporaryConversation]);
 
-  const { conversationId } = useGetChatSearchParams();
-
   const { handleClickDialog } = useClickDialogCard();
 
   const { data: userInfo } = useFetchUserInfo();
-  const { data: conversation } = useFetchNextConversation();
+  // const { data: conversation } = useFetchNextConversation();
 
   useEffect(() => {
-    if (data && data.length > 0) {
-      if (data.every((x) => x.id !== dialogId)) {
-        handleClickDialog(data[0].id);
+    if (dialogListData && dialogListData.length > 0) {
+      if (dialogListData.every((x) => x.id !== dialogId)) {
+        handleClickDialog(dialogListData[0].id);
       }
     }
-  }, [data, dialogId, handleClickDialog]);
+  }, [dialogListData, dialogId, handleClickDialog]);
 
   useEffect(() => {
     if (dialogId && !conversationId) {
@@ -126,19 +136,19 @@ export default function Chat() {
 
   const [fileList, setFileList] = useState<any>([]);
 
-  const isUploadingFile = fileList.some((x) => x.status === "uploading");
+  const isUploadingFile = fileList.some((x) => x.status === 'uploading');
 
   const getFileIds = (fileList: any) => {
     const ids = fileList.reduce((pre, cur) => {
-      return pre.concat(get(cur, "response.data", []));
+      return pre.concat(get(cur, 'response.data', []));
     }, []);
 
     return ids;
   };
 
   const isUploadSuccess = (file: any) => {
-    const retcode = get(file, "response.retcode");
-    return typeof retcode === "number" && retcode === 0;
+    const retcode = get(file, 'response.retcode');
+    return typeof retcode === 'number' && retcode === 0;
   };
 
   const handleSubmit = useCallback(async () => {
@@ -150,59 +160,18 @@ export default function Chat() {
   }, [fileList, handlePressEnter, isUploadingFile]);
 
   return (
-    <div className="flex-1 overflow-hidden p-2 sm:p-4 md:p-6 lg:p-8">
-      <Card className="flex flex-col h-full w-full max-w-4xl mx-auto shadow-xl rounded-xl overflow-hidden">
-        <CardHeader className="p-3 sm:p-4 md:p-6 bg-primary text-primary-foreground rounded-t-xl">
-          <CardTitle className="flex items-center text-base sm:text-lg md:text-xl lg:text-2xl">
-            <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 mr-2" />
-            {data?.[0]?.name}
+    <div className='flex-1 h-full overflow-hidden p-2 sm:p-4 md:p-6 lg:p-8'>
+      <Card className='flex flex-col h-full w-full max-w-4xl mx-auto shadow-xl rounded-xl overflow-hidden'>
+        <CardHeader className='p-3 sm:p-4 md:p-6 bg-primary text-primary-foreground rounded-t-xl'>
+          <CardTitle className='flex items-center text-base sm:text-lg md:text-xl lg:text-2xl'>
+            <MessageCircle className='w-6 h-6 sm:w-7 sm:h-7 mr-2' />
+            {dialogListData?.[0]?.name}
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex-grow overflow-hidden p-2 sm:p-4 md:p-6">
-          <ScrollArea className="h-full pr-4">
-            <div className="flex flex-col space-y-4">
+        <CardContent className='flex-grow overflow-hidden p-2 sm:p-4 md:p-6'>
+          <ScrollArea className='h-full pr-4'>
+            <div className='flex flex-col space-y-4'>
               {derivedMessages.map((message, index) => (
-                // <div
-                //   key={index}
-                //   className={`flex ${
-                //     message.role === "user" ? "justify-end" : "justify-start"
-                //   }`}
-                // >
-                //   <div
-                //     className={`flex items-start max-w-[80%] ${
-                //       message.role === "user" ? "flex-row-reverse" : "flex-row"
-                //     }`}
-                //   >
-                //     <Avatar className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
-                //       <AvatarImage
-                //         src={
-                //           message.role === "assistant"
-                //             ? "https://i.pravatar.cc/150?img=1"
-                //             : "https://i.pravatar.cc/150?img=3"
-                //         }
-                //         alt={message.role}
-                //       />
-                //       <AvatarFallback>
-                //         {message.role === "user" ? "U" : "A"}
-                //       </AvatarFallback>
-                //     </Avatar>
-                //     <div
-                //       className={`mx-1 sm:mx-2 p-1.5 sm:p-2 rounded-lg text-sm sm:text-sm md:text-base ${
-                //         message.role === "user"
-                //           ? "bg-primary text-primary-foreground"
-                //           : "bg-muted"
-                //       }`}
-                //     >
-                //       {message.role === "assistant" &&
-                //       sendLoading &&
-                //       index === messages.length - 1 ? (
-                //         <span className="animate-pulse">{message.content}</span>
-                //       ) : (
-                //         message.content
-                //       )}
-                //     </div>
-                //   </div>
-                // </div>
                 <MessageItem
                   suggestedQuestionsData={suggestedQuestionsData}
                   loading={
@@ -213,11 +182,11 @@ export default function Chat() {
                   key={message.id}
                   item={message}
                   nickname={userInfo.nickname}
-                  avatar={userInfo.avatar || "https://i.pravatar.cc/150?img=3"}
+                  avatar={userInfo.avatar || 'https://i.pravatar.cc/150?img=3'}
                   reference={buildMessageItemReference(
                     {
                       message: derivedMessages,
-                      reference: conversation.reference,
+                      reference: conversationData?.reference,
                     },
                     message
                   )}
@@ -230,27 +199,26 @@ export default function Chat() {
             <div ref={ref} />
           </ScrollArea>
         </CardContent>
-
-        <CardFooter className="p-2 sm:p-4 md:p-6 bg-muted/50 rounded-b-xl">
+        <CardFooter className='p-2 sm:p-4 md:p-6 bg-muted/50 rounded-b-xl'>
           <Input
-            name="chatInput"
-            type="text"
+            name='chatInput'
+            type='text'
             disabled={sendLoading}
             value={value}
             onPressEnter={handlePressEnter}
             onChange={handleInputChange}
-            placeholder="Type your message..."
-            className="flex-grow text-sm sm:text-base"
+            placeholder='Type your message...'
+            className='flex-grow text-sm sm:text-base mr-2'
           />
 
           <Button
             disabled={sendLoading}
-            type="button"
+            type='button'
             onClick={handleSubmit}
-            className="px-3 sm:px-4 bg-primary transition-colors duration-200"
+            className='px-3 sm:px-4 bg-primary transition-colors duration-200'
           >
-            <Send className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Send</span>
+            <Send className='w-4 h-4 sm:mr-2' />
+            <span className='hidden sm:inline'>Send</span>
           </Button>
         </CardFooter>
       </Card>
