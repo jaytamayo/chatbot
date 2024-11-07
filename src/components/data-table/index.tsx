@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { ChevronDownIcon } from 'lucide-react';
+import * as React from "react";
+import { ChevronDownIcon } from "lucide-react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -11,7 +11,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 
 import {
   Button,
@@ -26,8 +26,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '~/components/ui';
-import { useTranslation } from 'react-i18next';
+} from "~/components/ui";
+import { useTranslation } from "react-i18next";
 
 interface IProps<Type> {
   data: Type[];
@@ -46,7 +46,7 @@ export function DataTable<T>({ data, columns, filterColumnBy }: IProps<T>) {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
-  const { t } = useTranslation('table');
+  const { t } = useTranslation("table");
 
   const table = useReactTable({
     data,
@@ -68,25 +68,25 @@ export function DataTable<T>({ data, columns, filterColumnBy }: IProps<T>) {
   });
 
   return (
-    <div className='w-full'>
-      <div className='flex items-center py-4'>
+    <div className="w-full">
+      <div className="flex items-center py-4">
         <Input
           placeholder={`Search ...`}
           value={
-            (table.getColumn(filterColumnBy)?.getFilterValue() as string) ?? ''
+            (table.getColumn(filterColumnBy)?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
             table.getColumn(filterColumnBy)?.setFilterValue(event.target.value)
           }
-          className='max-w-sm'
+          className="max-w-sm"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant='outline' className='ml-auto'>
-              Columns <ChevronDownIcon className='ml-2 h-4 w-4' />
+            <Button variant="outline" className="ml-auto">
+              Columns <ChevronDownIcon className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
+          <DropdownMenuContent align="end">
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
@@ -94,7 +94,7 @@ export function DataTable<T>({ data, columns, filterColumnBy }: IProps<T>) {
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
-                    className='capitalize'
+                    className="capitalize"
                     checked={column.getIsVisible()}
                     onCheckedChange={(value) =>
                       column.toggleVisibility(!!value)
@@ -107,7 +107,7 @@ export function DataTable<T>({ data, columns, filterColumnBy }: IProps<T>) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className='rounded-md border'>
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -132,7 +132,7 @@ export function DataTable<T>({ data, columns, filterColumnBy }: IProps<T>) {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
+                  data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -148,36 +148,36 @@ export function DataTable<T>({ data, columns, filterColumnBy }: IProps<T>) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className='h-24 text-center'
+                  className="h-24 text-center"
                 >
-                  {t('no-results')}
+                  {t("no-results")}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <div className='flex items-center justify-end space-x-2 py-4'>
-        <div className='flex-1 text-sm text-muted-foreground'>
-          {table.getFilteredSelectedRowModel().rows.length} of{' '}
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
-        <div className='space-x-2'>
+        <div className="space-x-2">
           <Button
-            variant='outline'
-            size='sm'
+            variant="outline"
+            size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            {t('previous')}
+            {t("previous")}
           </Button>
           <Button
-            variant='outline'
-            size='sm'
+            variant="outline"
+            size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            {t('next')}
+            {t("next")}
           </Button>
         </div>
       </div>
