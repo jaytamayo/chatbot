@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui';
+import { useTranslation } from 'react-i18next';
 
 interface IProps<Type> {
   data: Type[];
@@ -44,6 +45,8 @@ export function DataTable<T>({ data, columns, filterColumnBy }: IProps<T>) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+
+  const { t } = useTranslation('table');
 
   const table = useReactTable({
     data,
@@ -147,7 +150,7 @@ export function DataTable<T>({ data, columns, filterColumnBy }: IProps<T>) {
                   colSpan={columns.length}
                   className='h-24 text-center'
                 >
-                  No results.
+                  {t('no-results')}
                 </TableCell>
               </TableRow>
             )}
@@ -166,7 +169,7 @@ export function DataTable<T>({ data, columns, filterColumnBy }: IProps<T>) {
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            {t('previous')}
           </Button>
           <Button
             variant='outline'
@@ -174,7 +177,7 @@ export function DataTable<T>({ data, columns, filterColumnBy }: IProps<T>) {
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            {t('next')}
           </Button>
         </div>
       </div>

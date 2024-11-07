@@ -24,6 +24,11 @@ import {
   fetchDialogList,
 } from '~/app/routes/dialog.list/route';
 import {
+  loader as conversationLoader,
+  fetchConversationById,
+} from '../conversation.get/route';
+
+import {
   MessageType,
   useSendNextMessage,
 } from '~/app/hooks/useSendNextMessage';
@@ -36,8 +41,11 @@ import { useLoaderData } from '@remix-run/react';
 import { useFetchUserInfo } from '~/hooks/useFetchUserInfo';
 import MessageItem from '~/components/message-item';
 import { buildMessageItemReference } from '~/utils/chat/buildMessageItemReference';
-import { useFetchNextConversation } from '~/app/hooks/queries/useFetchNextConversation';
 import { createClient } from '~/utils/supabase/server';
+
+interface IProps {
+  controller: AbortController;
+}
 
 export const meta: MetaFunction = () => {
   return [
@@ -71,19 +79,27 @@ export const loader: LoaderFunction = async ({
   }
 };
 
-export default function Chat() {
+export default function Chat({ controller }: IProps) {
   const { authorization, data: suggestedQuestionsData } =
     useLoaderData<typeof loader>();
+
+  const { conversationId, isNew } = useGetChatSearchParams();
 
   const { data: dialogListData } = useQuery({
     queryKey: ['dialogList', authorization],
     queryFn: fetchDialogList,
   });
 
+  const { data: conversationData } = useQuery({
+    queryKey: ['fetchConversation', conversationId],
+    queryFn: () =>
+      fetchConversationById({ authorization, conversationId, isNew }),
+    refetchOnWindowFocus: false,
+    enabled: !!conversationId,
+  });
+
   const { addTemporaryConversation } = useSelectDerivedConversationList();
   const { dialogId } = useGetChatSearchParams();
-
-  const [controller] = useState(new AbortController());
 
   const {
     ref,
@@ -99,14 +115,10 @@ export default function Chat() {
     addTemporaryConversation();
   }, [addTemporaryConversation]);
 
-  const { conversationId } = useGetChatSearchParams();
-
   const { handleClickDialog } = useClickDialogCard();
 
   const { data: userInfo } = useFetchUserInfo();
-  const { data: conversation } = useFetchNextConversation();
-
-  console.log('conversation chat', conversation);
+  // const { data: conversation } = useFetchNextConversation();
 
   useEffect(() => {
     if (dialogListData && dialogListData.length > 0) {
@@ -148,7 +160,7 @@ export default function Chat() {
   }, [fileList, handlePressEnter, isUploadingFile]);
 
   return (
-    <div className='flex-1 overflow-hidden p-2 sm:p-4 md:p-6 lg:p-8'>
+    <div className='flex-1 h-full overflow-hidden p-2 sm:p-4 md:p-6 lg:p-8'>
       <Card className='flex flex-col h-full w-full max-w-4xl mx-auto shadow-xl rounded-xl overflow-hidden'>
         <CardHeader className='p-3 sm:p-4 md:p-6 bg-primary text-primary-foreground rounded-t-xl'>
           <CardTitle className='flex items-center text-base sm:text-lg md:text-xl lg:text-2xl'>
@@ -174,7 +186,7 @@ export default function Chat() {
                   reference={buildMessageItemReference(
                     {
                       message: derivedMessages,
-                      reference: conversation.reference,
+                      reference: conversationData?.reference,
                     },
                     message
                   )}
@@ -187,7 +199,6 @@ export default function Chat() {
             <div ref={ref} />
           </ScrollArea>
         </CardContent>
-
         <CardFooter className='p-2 sm:p-4 md:p-6 bg-muted/50 rounded-b-xl'>
           <Input
             name='chatInput'
@@ -197,7 +208,7 @@ export default function Chat() {
             onPressEnter={handlePressEnter}
             onChange={handleInputChange}
             placeholder='Type your message...'
-            className='flex-grow text-sm sm:text-base'
+            className='flex-grow text-sm sm:text-base mr-2'
           />
 
           <Button

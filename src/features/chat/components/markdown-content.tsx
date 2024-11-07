@@ -29,14 +29,14 @@ const MarkdownContent = ({
   reference: IReference;
   sendLoading?: boolean;
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('chat');
 
   const { setDocumentIds } = useFetchDocumentThumbnailsByIds();
 
   const contentWithCursor = useMemo(() => {
     let text = content;
     if (text === '') {
-      text = t('chat.searching');
+      text = t('searching');
     }
     return loading ? text?.concat('~~2$$') : text;
   }, [content, loading, t]);

@@ -1,8 +1,12 @@
-import { MouseEventHandler, useCallback, useEffect, useState } from 'react';
-import { ArrowUpDown, Ellipsis } from 'lucide-react';
-import { useLoaderData } from '@remix-run/react';
-import { useQuery } from '@tanstack/react-query';
-import { json, LoaderFunction, LoaderFunctionArgs } from '@remix-run/node';
+import { useCallback, useEffect, useState } from 'react';
+import { useActionData, useLoaderData, useSubmit } from '@remix-run/react';
+import { QueryClient, useQuery } from '@tanstack/react-query';
+import {
+  ActionFunctionArgs,
+  json,
+  LoaderFunction,
+  LoaderFunctionArgs,
+} from '@remix-run/node';
 
 import { useClickDialogCard } from '~/app/hooks/useClickDialogCard';
 import { useGetChatSearchParams } from '~/app/hooks/useGetChatSearchParams';
@@ -12,24 +16,15 @@ import {
   loader as dialogLoader,
   fetchDialogList,
 } from '~/app/routes/dialog.list/route';
-import {
-  Button,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '~/components/ui';
+
 import { DataTable } from '~/components/data-table';
-import { ColumnDef } from '@tanstack/react-table';
-import {
-  IConversation,
-  useFetchNextConversation,
-} from '~/app/hooks/queries/useFetchNextConversation';
 import { ChatSheet } from '~/features/history/components/chat-sheet';
 import { useSetNewConversationRouteParams } from '~/app/hooks/useSetNewConversationRouteParams';
 import { IDialog } from '../dialog.list/interface';
+import Chat from '../_private.chat/route';
+import { useDeleteConfirmModal } from '~/features/history/components/delete-confirm-modal';
+import { toast } from 'sonner';
+import { historyTableColumns } from '~/features/history/table-column';
 
 export const loader: LoaderFunction = async ({
   request,
@@ -47,11 +42,44 @@ export const loader: LoaderFunction = async ({
   }
 };
 
+export async function action({ request }: ActionFunctionArgs) {
+  const { authorization } = await getRagSessionCookie(request);
+  const queryClient = new QueryClient();
+
+  const body = await request.formData();
+  const dialogId = JSON.parse(body.get('dialog_id') as string);
+  const conversationIds = JSON.parse(body.get('conversation_ids') as string);
+
+  const response = await fetch('http://localhost:9380/v1/conversation/rm', {
+    method: 'POST',
+    headers: {
+      Authorization: authorization,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      dialog_id: dialogId,
+      conversation_ids: conversationIds,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (data.retcode === 0) {
+    queryClient.invalidateQueries({ queryKey: ['fetchConversationList'] });
+
+    toast.success('DELETED');
+  }
+
+  return json(data);
+}
+
 export default function ChatHistory() {
+  const { authorization } = useLoaderData<typeof loader>();
+  const data = useActionData<typeof action>();
+
   const [controller, setController] = useState(new AbortController());
   const [chatSheetDisplay, setChatSheetDisplay] = useState(false);
 
-  const { authorization } = useLoaderData<typeof loader>();
   const { dialogId } = useGetChatSearchParams();
 
   const { data: dialogListData } = useQuery({
@@ -63,7 +91,16 @@ export default function ChatHistory() {
   const { handleClickDialog } = useClickDialogCard();
   const { setNewConversationRouteParams } = useSetNewConversationRouteParams();
 
-  const { refetch: fetchConversationById } = useFetchNextConversation();
+  const { DeleteConfirmModal, handleRemoveDialog } = useDeleteConfirmModal();
+
+  const submit = useSubmit();
+
+  //change this to use loader featcher with useFetchNextConversationList
+  useEffect(() => {
+    if (data && data?.retcode === 0) {
+      refetch();
+    }
+  }, [data]);
 
   useEffect(() => {
     if (dialogListData && dialogListData.length > 0) {
@@ -80,17 +117,19 @@ export default function ChatHistory() {
   const handleConversationCardClick = useCallback(
     (conversationId: string, isNew: boolean) => () => {
       setNewConversationRouteParams(conversationId, isNew ? 'true' : '');
-      fetchConversationById();
       setController((pre) => {
         pre.abort();
         return new AbortController();
       });
       setChatSheetDisplay(true);
     },
-    [fetchConversationById, setNewConversationRouteParams]
+    [setNewConversationRouteParams]
   );
 
-  const tableColumns = columns({ handleConversationCardClick });
+  const tableColumns = historyTableColumns({
+    handleConversationCardClick,
+    handleRemoveDialog,
+  });
 
   return (
     <div className='p-8'>
@@ -102,83 +141,10 @@ export default function ChatHistory() {
       <ChatSheet
         isOpen={chatSheetDisplay}
         setChatSheetDisplay={() => setChatSheetDisplay((prev) => !prev)}
-      />
+      >
+        <Chat controller={controller} />
+      </ChatSheet>
+      <DeleteConfirmModal submit={submit} />
     </div>
   );
 }
-
-export const columns = ({
-  handleConversationCardClick,
-}: {
-  handleConversationCardClick: (
-    id: string,
-    is_new: boolean
-  ) => MouseEventHandler<HTMLButtonElement>;
-}): ColumnDef<IConversation>[] => {
-  return [
-    {
-      accessorKey: 'name',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant='ghost'
-            onClick={() =>
-              column.toggleSorting(column.getNextSortingOrder() === 'asc')
-            }
-          >
-            Chat
-            <ArrowUpDown className='ml-2 h-4 w-4' />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const cellData = row.original;
-
-        return (
-          <div className='capitalize'>
-            <Button
-              variant='link'
-              className='underline cursor-pointer text-white'
-              onClick={handleConversationCardClick(
-                cellData?.id,
-                cellData?.is_new
-              )}
-            >
-              {row.getValue('name')}
-            </Button>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'create_date',
-      header: 'Date',
-    },
-    {
-      id: 'actions',
-      enableHiding: false,
-      cell: ({ row }) => {
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant='ghost' className='h-8 w-8 p-0'>
-                <span className='sr-only'>Open menu</span>
-                <Ellipsis className='h-4 w-4' />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align='end'>
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                //delete chat
-                onClick={() => row}
-              >
-                Delete
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
-};

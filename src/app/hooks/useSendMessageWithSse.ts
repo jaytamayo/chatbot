@@ -78,7 +78,6 @@ export const useSendMessageWithSse = (
             }
           }
         }
-        console.info('done?');
         setDone(true);
         resetAnswer();
         return { data: await res, response };

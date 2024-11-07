@@ -23,10 +23,9 @@ export const useFetchNextConversation = () => {
     gcTime: 0,
     refetchOnWindowFocus: false,
     queryFn: async () => {
-      console.log('caled');
       if (isNew !== 'true' && isConversationIdExist(conversationId)) {
         const response = await fetch(
-          `http://127.0.0.1:9380/v1//conversation/get?conversation_id=${conversationId}`,
+          `http://127.0.0.1:9380/v1/conversation/get?conversation_id=${conversationId}`,
           {
             method: 'GET',
             headers: {

@@ -1,5 +1,4 @@
-import { SetStateAction } from 'react';
-import Chat from '~/app/routes/_private.chat/route';
+import { ReactElement, SetStateAction } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -11,9 +10,11 @@ import {
 export function ChatSheet({
   isOpen,
   setChatSheetDisplay,
+  children,
 }: {
   isOpen?: boolean;
   setChatSheetDisplay?: React.Dispatch<SetStateAction<boolean>>;
+  children: ReactElement;
 }) {
   return (
     <Sheet open={isOpen} onOpenChange={setChatSheetDisplay}>
@@ -23,9 +24,7 @@ export function ChatSheet({
           Sheet that shows your previous conversation
         </SheetDescription>
       </SheetHeader>
-      <SheetContent>
-        <Chat />
-      </SheetContent>
+      <SheetContent>{children}</SheetContent>
     </Sheet>
   );
 }
